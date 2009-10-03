@@ -18,8 +18,8 @@ expand.genotype(n, alleles = NULL, ploidy = 2, matrix = FALSE)
 \arguments{
   \item{x}{an object of class \code{"loci"}.}
   \item{n}{an integer giving how many alleles to consider (ignored if
-    \code{alleles} is used.}
-  \item{alleles}{a vector of alleles as a character vector.}
+    \code{alleles} is used).}
+  \item{alleles}{the allele names as a vector of mode character.}
   \item{ploidy}{an integer giving the ploidy level (either 2 or 4 for
     the moment).}
   \item{matrix}{a logical specifying whether to return the genotypes in

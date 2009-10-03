@@ -7,12 +7,14 @@
   sequences. The result can be plotted with the appropriate function.
 }
 \usage{
-haplotype(x)
+haplotype(x, labels = NULL)
 \method{plot}{haplotype}(x, ...)
 }
 \arguments{
   \item{x}{a set of DNA sequences (as an object of class
     \code{"DNAbin"}, or an object of class \code{"haplotype"}.}
+  \item{labels}{a vector of character strings used as names for the rows
+    of the returned object. By default, Roman numbers are given.}
   \item{\dots}{further arguments passed to \code{\link[graphics]{barplot}}.}
 }
 \value{

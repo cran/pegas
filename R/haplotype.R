@@ -1,4 +1,4 @@
-## haplotype.R (2009-05-10)
+## haplotype.R (2009-06-12)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
@@ -28,7 +28,7 @@
     cumprod(P)[j]
 }
 
-haplotype <- function(x)
+haplotype <- function(x, labels = NULL)
 {
     if (is.list(x)) x <- as.matrix(x)
     rownames(x) <- NULL
@@ -54,6 +54,9 @@ haplotype <- function(x)
         }
     }
     obj <- x[keep, ]
+    if (is.null(labels))
+        labels <- as.character(as.roman(1:length(keep)))
+    rownames(obj) <- labels
     class(obj) <- c("haplotype", "DNAbin")
     attr(obj, "index") <- no
     obj
@@ -363,5 +366,5 @@ if (!fast) {
 plot.haplotype <- function(x, ...)
 {
     barplot(sapply(attr(x, "index"), length), xlab = "Haplotype",
-            ylab = "Number", names.arg = as.roman(1:nrow(x)), ...)
+            ylab = "Number", names.arg = rownames(x), ...)
 }

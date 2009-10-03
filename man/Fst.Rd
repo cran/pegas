@@ -34,6 +34,4 @@ Fst(x, pop = NULL)
   1358--1370.
 }
 \author{Emmanuel Paradis}
-\examples{
-}
 \keyword{htest}

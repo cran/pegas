@@ -3,9 +3,28 @@
 
 NEW FEATURES
 
-    o 
+    o The new function site.spectrum computes the (un)folded site
+      frequency spectrum of a set of DNA sequences.
+
+    o The new function theta.tree estimates THETA from a phylogenetic tree
+      under a simple coalescent model by maximum likelihood.
+
+    o There is now a "[" method for the class "loci".
+
+    o haplotype() has now an option 'labels' to give as rownames of
+      the returned object.
+
+    o amova() has a new option 'is.squared' to specify whether the
+      distance matrix has been squared beforefand (FALSE by default).
+
+    o write.loci() has a new argument '...' passed to write.table().
+
+    o The functions heterozygosity, nuc.div, theta.h, theta.k and
+      theta.s have been moved from ape to pegas.
 
 
 BUG FIXES
 
-    o 
+    o amova() did not compute SSD correctly.
+
+    o summary.loci() failed in the presence of NA's.

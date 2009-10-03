@@ -1,4 +1,4 @@
-## IO.R (2009-05-10)
+## IO.R (2009-10-03)
 
 ##   Input/Ouput
 
@@ -60,11 +60,11 @@ read.gtx <- function(file)
     obj
 }
 
-write.loci <- function(x, file = "", loci.sep = " ", allele.sep = "/")
+write.loci <- function(x, file = "", loci.sep = " ", allele.sep = "/", ...)
 {
     if (allele.sep != "/") {
-        for (i in 1:attr(x, "locicol"))
+        for (i in attr(x, "locicol"))
             levels(x[[i]]) <- gsub("/", allele.sep, levels(x[[i]]))
     }
-    write.table(x, file = file, sep = loci.sep)
+    write.table(x, file = file, sep = loci.sep, ...)
 }

@@ -8,7 +8,7 @@
 read.gtx(file)
 }
 \arguments{
-  \item{file}{a file name specified by either a variable of mode character,
+  \item{file}{a file name specified by either a variable of mode character
     or a quoted string.}
 }
 \value{
@@ -16,7 +16,7 @@ read.gtx(file)
 }
 \author{Emmanuel Paradis}
 \note{
-  The package \pkg{adegenet} has a function with the same name, but it
+  The package \pkg{adegenet} has a similar function, but it
   returns an object of class \code{"genind"}.
 }
 \references{
@@ -29,5 +29,10 @@ read.gtx(file)
 \seealso{
   \code{\link{read.loci}}, \code{\link{write.loci}},
   \code{\link[adegenet]{read.genetix}}
+}
+\examples{
+require(adegenet)
+(X <- read.gtx(system.file("files/nancycats.gtx", package = "adegenet")))
+## compare with the example in ?read.genetix
 }
 \keyword{IO}

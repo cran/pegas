@@ -1,4 +1,4 @@
-## amova.R (2009-05-10)
+## amova.R (2009-10-02)
 
 ##   Analysis of Molecular Variance
 
@@ -7,7 +7,7 @@
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
 
-amova <- function(formula, data = NULL, nperm = 1000)
+amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
 {
     y.nms <- as.character(as.expression(formula[[2]]))
     rhs <- formula[[3]]
@@ -16,7 +16,7 @@ amova <- function(formula, data = NULL, nperm = 1000)
     if (length(rhs) > 1) gr.nms <- unlist(strsplit(gr.nms, "/"))
 
     y <- get(y.nms)
-    y <- y^2 # square the distances
+    if (!is.squared) y <- y^2 # square the distances
     if (class(y) == "dist") y <- as.matrix(y)
     if (!is.matrix(y))
         stop("the lhs of the formula must be either a matrix or an object of class 'dist'.")
@@ -33,14 +33,15 @@ amova <- function(formula, data = NULL, nperm = 1000)
 
     getSSD <- function(y, gr, Nlv, N, n) {
         SSD <- numeric(Nlv + 2)
-        SSD[c(1, Nlv + 2)] <- sum(y/n) # total SSD
+        SSD[Nlv + 2] <- sum(y/(2 * n)) # total SSD
         ## calculate SSD *within* each level:
         for (i in 1:Nlv) {
             p <- gr[, i] # extract the grouping at this level
-            SSD[i + 1] <- sum((y/N[[i]][p])[outer(p, p, "==")])
+            SSD[i + 1] <- sum((y/(2 * N[[i]])[p])[outer(p, p, "==")])
         }
         ## now differentiate to get the SSDs:
-        for (i in Nlv:1) SSD[i] <- SSD[i] - SSD[i + 1]
+        for (i in Nlv:2) SSD[i] <- SSD[i] - SSD[i + 1]
+        SSD[1] <- SSD[Nlv + 2] - sum(SSD[-(Nlv + 2)])
         SSD
     }
 
@@ -88,6 +89,7 @@ amova <- function(formula, data = NULL, nperm = 1000)
                 }
             }
         }
+        names(ncoef) <- letters[1:length(ncoef)] # suggestion by Rodney Dyer
         ncoef
     }
 
@@ -107,7 +109,7 @@ amova <- function(formula, data = NULL, nperm = 1000)
                 }
             }
         }
-        names(sigma2) <- c(names(gr), "Within pop")
+        names(sigma2) <- c(names(gr), "Error")
         sigma2
     }
 
@@ -121,8 +123,8 @@ amova <- function(formula, data = NULL, nperm = 1000)
 
     ## output the results:
     res <- list(tab = data.frame(SSD = SSD, MSD = MSD, df = df,
-                row.names = c(names(gr), "Within pop", "Total")),
-                varcomp = sigma2, call = match.call())
+                row.names = c(names(gr), "Error", "Total")),
+                varcoef = ncoef, varcomp = sigma2, call = match.call())
     class(res) <- "amova"
 
     if (nperm) {
@@ -197,5 +199,7 @@ print.amova <- function(x, ...)
     print(x$tab)
     cat("\nVariance components:\n")
     print(x$varcomp)
+    cat("\nVariance coefficients:\n")
+    print(x$varcoef)
     cat("\n")
 }

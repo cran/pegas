@@ -8,7 +8,7 @@
   any number of hierarchical levels.
 }
 \usage{
-amova(formula, data = NULL, nperm = 1000)
+amova(formula, data = NULL, nperm = 1000, is.squared = FALSE)
 \method{print}{amova}(x, ...)
 }
 \arguments{
@@ -20,6 +20,8 @@ amova(formula, data = NULL, nperm = 1000)
   \item{nperm}{the number of permutations for the tests of hypotheses
     (1000 by default). Set this argument to 0 to skip the tests and
     simply estimate the variance components.}
+  \item{is.squared}{a logical specifying whether the distance matrix has
+    already been squared.}
   \item{x}{an object of class \code{"amova"}.}
   \item{\dots}{unused (here for compatibility.}
 }
