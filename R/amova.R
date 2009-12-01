@@ -40,7 +40,8 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
             SSD[i + 1] <- sum((y/(2 * N[[i]])[p])[outer(p, p, "==")])
         }
         ## now differentiate to get the SSDs:
-        for (i in Nlv:2) SSD[i] <- SSD[i] - SSD[i + 1]
+        if (Nlv > 1)
+            for (i in Nlv:2) SSD[i] <- SSD[i] - SSD[i + 1]
         SSD[1] <- SSD[Nlv + 2] - sum(SSD[-(Nlv + 2)])
         SSD
     }
@@ -186,6 +187,7 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
         P <- numeric(Nlv + 1)
         for (j in 1:(Nlv + 1))
             P[j] <- sum(rSigma2[, j] >= sigma2[j])/nperm
+        P[Nlv + 1] <- NA
         res$varcomp <- data.frame(sigma2 = res$varcomp, P.value = P)
     }
     res
@@ -198,7 +200,8 @@ print.amova <- function(x, ...)
     cat("\n")
     print(x$tab)
     cat("\nVariance components:\n")
-    print(x$varcomp)
+    x$varcomp["Error", "P.value"] <- NA
+    printCoefmat(x$varcomp, na.print = "")
     cat("\nVariance coefficients:\n")
     print(x$varcoef)
     cat("\n")

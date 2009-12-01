@@ -28,8 +28,9 @@ amova(formula, data = NULL, nperm = 1000, is.squared = FALSE)
 \details{
   The formula must be of the form \code{d ~ A/B/...} where \code{d} is a
   distance object, and \code{A}, \code{B}, etc, are the hierarchical
-  levels from the highest one. Any number of levels is accepted, so
-  specifying \code{d ~ A} will simply test for population differentiation.
+  levels from the highest to the lowest one. Any number of levels is
+  accepted, so specifying \code{d ~ A} will simply test for population
+  differentiation.
 
   It is assumed that the rows of the distance matrix are in the same
   order than the hierarchical levels (which may be checked by the user).
@@ -39,7 +40,7 @@ amova(formula, data = NULL, nperm = 1000, is.squared = FALSE)
   estimate the variance components.
 }
 \value{
-  an object of class \code{"amova"} which is a list with a table of sums
+  An object of class \code{"amova"} which is a list with a table of sums
   of square deviations (SSD), mean square deviations (MSD), and the
   number of degrees of freedom, and a vector of variance components.
 }
@@ -51,10 +52,10 @@ amova(formula, data = NULL, nperm = 1000, is.squared = FALSE)
   data. \emph{Genetics}, \bold{131}, 479--491.
 }
 \seealso{
-  \code{\link[ade4]{amova}} in the \pkg{ade4} for an implementation of
-  the original Excoffier et al.'s model;  \code{\link[vegan]{adonis}}
-  for a general (multivariate) implementation of an ANOVA framework with
-  distances.
+  \code{\link[ade4]{amova}} in \pkg{ade4} for an implementation of
+  the original Excoffier et al.'s model;  \code{\link[vegan]{adonis}} in
+  \pkg{vegan} for a general (multivariate) implementation of an ANOVA
+  framework with distances.
 }
 \examples{
 require(ape)

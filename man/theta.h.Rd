@@ -15,7 +15,7 @@ theta.h(x, standard.error = FALSE)
   homozygosity (or mean heterozygosity) from gene frequencies.
 }
 \value{
-  a numeric vector of length one with the estimated theta (the default),
+  A numeric vector of length one with the estimated theta (the default),
   or of length two if the standard error is returned
   (\code{standard.error = TRUE}).
 }
@@ -38,10 +38,19 @@ theta.h(x, standard.error = FALSE)
   mitochondrial DNA genome in American Indians is at mutation-drift
   equilibrium. \emph{American Journal of Human Genetics}, \bold{86}, 497--506.
 }
-\author{Emmanuel Paradis \email{Emmanuel.Paradis@mpl.ird.fr}}
+\author{Emmanuel Paradis}
 \seealso{
   \code{\link{heterozygosity}}, \code{\link{theta.s}},
   \code{\link{theta.k}}, \code{\link{theta.tree}}
+}
+\examples{
+## similar to what is in ?H:
+require(adegenet)
+data(nancycats)
+## convert the data and compute frequencies:
+S <- summary(as.loci(nancycats))
+## compute THETA for all loci:
+sapply(S, function(x) theta.h(x$allele))
 }
 \keyword{manip}
 \keyword{univar}

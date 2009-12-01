@@ -17,9 +17,8 @@ H(x, variance = FALSE)
   and returns optionally the associated variance.
 }
 \value{
-  a numeric vector of length one with the estimated mean heterozygosity
-  (the default), or of length two if the variance is returned
-  \code{variance = TRUE}.
+  A numeric vector of length one with the estimated mean heterozygosity
+  (the default), or of length two if the variance is returned.
 }
 \details{
   The argument \code{x} can be either a factor or a vector. If it is a
@@ -35,15 +34,25 @@ H(x, variance = FALSE)
 
   where \eqn{n} is the number of genes in the sample, \eqn{k} is the
   number of alleles, and \eqn{p_i} is the observed (relative) frequency
-  of the allele \eqn{i}.
+  of the \eqn{i}th allele.
 }
 \references{
   Nei, M. (1987) \emph{Molecular evolutionary genetics}. New York:
   Columbia University Press.
 }
-\author{Emmanuel Paradis \email{Emmanuel.Paradis@mpl.ird.fr}}
+\author{Emmanuel Paradis}
 \seealso{
   \code{\link{theta.s}}
+}
+\examples{
+require(adegenet)
+data(nancycats)
+## convert the data and compute frequencies:
+S <- summary(as.loci(nancycats))
+## compute H for all loci:
+sapply(S, function(x) H(x$allele))
+## ... and its variance
+sapply(S, function(x) H(x$allele, variance = TRUE))
 }
 \keyword{manip}
 \keyword{univar}

@@ -1,4 +1,4 @@
-## summary.loci.R (2009-10-03)
+## summary.loci.R (2009-11-30)
 
 ##   Print and Summaries of Loci Objects
 
@@ -23,10 +23,16 @@ print.loci <- function(x, details = FALSE, ...)
     if (details) print.data.frame(x) else {
         n <- dim(x)
         nloci <- length(attr(x, "locicol"))
-        cat("Allelic data frame:", n[1], "individuals\n")
-        cat("                   ", nloci, "loci\n")
+        cat("Allelic data frame:", n[1])
+        if (n[1] == 1) cat(" individual\n") else cat(" individuals\n")
+        cat("                   ", nloci)
+        if (nloci == 1) cat(" locus\n") else cat(" loci\n")
         nav <- n[2] - nloci
-        if (nav) cat("                   ", nav, "additional variables\n")
+        if (nav) {
+            cat("                   ", nav)
+            if (nav == 1) cat(" additional variable\n")
+            else cat(" additional variables\n")
+        }
     }
 }
 
@@ -71,7 +77,7 @@ print.summary.loci <- function(x, ...)
     }
 }
 
-"[.loci" <- function(x, i, j)
+"[.loci" <- function(x, i, j, drop = TRUE)
 {
     oc <- oldClass(x)
     loci.nms <- names(x)[attr(x, "locicol")]
@@ -87,5 +93,28 @@ print.summary.loci <- function(x, ...)
             class(x) <- oc
         }
     }
+    x
+}
+
+rbind.loci <- function(...) NextMethod("rbind")
+## No need to drop the class cause it calls rbind.data.frame.
+## The successive bindings eventually reorders the columns to
+## agree with the 1st data frame, AND its "locicol" attribute
+## is kept, so need to change anything.
+
+cbind.loci <- function(...)
+{
+    x <- list(...)
+    n <- length(x)
+    if (n == 1) return(x[[1]])
+    NC <- unlist(lapply(x, ncol))
+    LOCICOL <- lapply(x, attr, "locicol")
+    offset.col <- cumsum(NC)
+    for (i in 2:n) LOCICOL[[i]] <- LOCICOL[[i]] + offset.col[i - 1]
+    for (i in 2:n) x[[1]] <- cbind.data.frame(x[[1]], x[[i]])
+    x <- x[[1]]
+    ## need to restore the class, so can't use NextMethod()
+    class(x) <- c("loci", "data.frame")
+    attr(x, "locicol") <- unlist(LOCICOL)
     x
 }

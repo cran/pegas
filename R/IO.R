@@ -1,4 +1,4 @@
-## IO.R (2009-10-03)
+## IO.R (2009-12-01)
 
 ##   Input/Ouput
 
@@ -9,10 +9,9 @@
 
 read.loci <-
     function(file, header = TRUE, loci.sep = " ", allele.sep = "/",
-             col.pop = "none", col.loci = NULL, skip = 0)
+             col.pop = "none", col.loci = NULL, ...)
 {
-    res <- read.table(file = file, header = header, sep = loci.sep,
-                      skip = skip, colClasses = "factor")
+    res <- read.table(file = file, header = header, sep = loci.sep, ...)
     as.loci.data.frame(res, allele.sep = allele.sep, col.pop = col.pop,
                        col.loci = col.loci)
 }
@@ -67,4 +66,15 @@ write.loci <- function(x, file = "", loci.sep = " ", allele.sep = "/", ...)
             levels(x[[i]]) <- gsub("/", allele.sep, levels(x[[i]]))
     }
     write.table(x, file = file, sep = loci.sep, ...)
+}
+
+edit.loci <- function(name, edit.row.names = TRUE, ...)
+{
+    oc <- oldClass(name)
+    locicol <- attr(name, "locicol")
+    class(name) <- "data.frame"
+    name <- NextMethod("[", edit.row.names = edit.row.names)
+    class(name) <- oc
+    attr(name, "locicol") <- locicol
+    name
 }

@@ -1,4 +1,4 @@
-## conversion.R (2009-05-10)
+## conversion.R (2009-11-29)
 
 ##   Conversion Among Allelic Data Classes
 
@@ -40,16 +40,17 @@ genind2loci <- function(x) as.loci.genind(x)
         y <- x[, k]
         lv <- levels(y)
         n <- length(lv)
+        if (n == 1) next
         ## works with all levels of ploidy:
         a <- matrix(unlist(strsplit(lv, "/")), nrow = n, byrow = TRUE)
         a <- t(apply(a, 1, sort))
-        levels(y) <- apply(a, 1, paste, collapse = "/")
-        drop <- FALSE
+        #levels(y) <- apply(a, 1, paste, collapse = "/")
+        #drop <- FALSE
         for (i in 1:(n - 1)) {
             for (j in (i + 1):n) {
                 if (all(a[i, ] == a[j, ])) {
                     y[y == lv[j]] <- lv[i]
-                    drop <- TRUE
+                    #drop <- TRUE
                     #break
                 }
             }
@@ -62,25 +63,24 @@ genind2loci <- function(x) as.loci.genind(x)
 as.loci.data.frame <-
     function(x, allele.sep = "/", col.pop = "none", col.loci = NULL, ...)
 {
-    if (is.null(col.loci)) locipop <- 1:ncol(x)
+    if (is.null(col.loci)) col.loci <- 1:ncol(x)
     if (is.numeric(col.pop)) {
         names(x)[col.pop] <- "population"
-        locipop <- locipop[-col.pop]
+        col.loci <- col.loci[-col.pop]
     }
     if (allele.sep != "/") {
         if (allele.sep == "")
             stop("alleles within a genotype must be separated")
-        for (i in 1:locipop)
+        for (i in 1:col.loci)
             levels(x[, i]) <- gsub(allele.sep, "/", levels(x[, i]))
     }
-    x <- .check.order.alleles(x)
     class(x) <- c("loci", "data.frame")
-    attr(x, "locicol") <- locipop
-    x
+    attr(x, "locicol") <- col.loci
+    .check.order.alleles(x)
 }
 
 as.loci.factor <- function(x, allele.sep = "/", ...)
     as.loci.data.frame(data.frame(x), allele.sep = allele.sep, ...)
 
-as.loci.vector <- function(x, allele.sep = "/", ...)
+as.loci.character <- function(x, allele.sep = "/", ...)
     as.loci.data.frame(data.frame(factor(x)), allele.sep = allele.sep, ...)

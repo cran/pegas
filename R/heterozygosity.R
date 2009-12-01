@@ -7,7 +7,7 @@
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
 
-heterozygosity <- function(x, variance = FALSE)
+H <- function(x, variance = FALSE)
 {
     if (!is.factor(x)) {
         if (is.numeric(x)) {
@@ -31,4 +31,4 @@ heterozygosity <- function(x, variance = FALSE)
     else return(H)
 }
 
-H <- function(x, variance = FALSE) heterozygosity(x, variance)
+heterozygosity <- function(x, variance = FALSE) H(x, variance)

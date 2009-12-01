@@ -16,12 +16,12 @@ Fst(x, pop = NULL)
     labelled \code{"population"} is used.}
 }
 \details{
-  The formulae in Weir and Cockerham are used for each allele, and then
-  averaged within each locus over the different alleles as suggested by
-  these authors.
+  The formulae in Weir and Cockerham (1984) are used for each allele,
+  and then averaged within each locus over the different alleles as
+  suggested by these authors.
 }
 \value{
-  a matrix with genes (loci) as rows and the three \emph{F}-statistics
+  A matrix with genes (loci) as rows and the three \emph{F}-statistics
   as columns.
 }
 \note{
@@ -34,4 +34,13 @@ Fst(x, pop = NULL)
   1358--1370.
 }
 \author{Emmanuel Paradis}
+\seealso{
+  \code{\link[adegenet]{fstat}} in \pkg{adegenet}
+}
+\examples{
+require(adegenet)
+data(nancycats)
+x <- as.loci(nancycats)
+Fst(x)
+}
 \keyword{htest}

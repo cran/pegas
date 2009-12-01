@@ -13,17 +13,19 @@
 \method{print}{loci}(x, details = FALSE, ...)
 \method{summary}{loci}(object, ...)
 \method{print}{summary.loci}(x, ...)
-\method{[}{loci}(x, i, j)
+\method{[}{loci}(x, i, j, drop = TRUE)
 \method{plot}{summary.loci}(x, loci, what = "both", layout = 1, col = c("blue", "red"), ...)
 }
 \arguments{
-  \item{x, object}{an object of class \code{"loci"} or \code{"genind"},
-    a data frame, a factor, or a vector.}
+  \item{x, object}{an object of class \code{"loci"} or \code{"summary.loci"}.}
   \item{details}{a logical value: if \code{TRUE} the data are printed as
     a data frame; the default is \code{FALSE}.}
   \item{i, j}{indices of the rows and/or columns to select or to drop.
     They may be numeric, logical, or character (in the same way than for
     standard R objects).}
+  \item{drop}{a logical specifying whether to returned an object of
+    the smallest dimension possible, i.e., may return a vector or a
+    factor if \code{drop = TRUE}.}
   \item{loci}{the loci (genes) to be plotted. By default, all loci are
     plotted.}
   \item{what}{the frequencies to be plotted. Three choices are possible:
@@ -40,8 +42,8 @@
   the returned data frame has no `loci' column, then the class
   \code{"loci"} is dropped.
 
-  Note that an object of class \code{"loci"} can be displayed in the R
-  spreadsheet editor with, e.g., \code{fix(x)}.
+  An object of class \code{"loci"} can be edited in the R data editor
+  with, e.g., \code{fix(x)} or \code{x <- edit(x)}.
 }
 \value{
   \code{summary.loci} returns a list with the genes as names and each
@@ -54,7 +56,7 @@
 }
 \author{Emmanuel Paradis}
 \seealso{
-  \code{\link{read.loci}}, \code{\link{getAlleles}}
+  \code{\link{read.loci}}, \code{\link{getAlleles}}, \code{\link{edit.loci}}
 }
 \examples{
 require(adegenet)

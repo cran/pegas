@@ -1,4 +1,4 @@
-## haplotype.R (2009-06-12)
+## haplotype.R (2009-12-01)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
@@ -30,6 +30,7 @@
 
 haplotype <- function(x, labels = NULL)
 {
+    nms.x <- deparse(substitute(x))
     if (is.list(x)) x <- as.matrix(x)
     rownames(x) <- NULL
     y <- apply(x, 1, rawToChar)
@@ -59,6 +60,7 @@ haplotype <- function(x, labels = NULL)
     rownames(obj) <- labels
     class(obj) <- c("haplotype", "DNAbin")
     attr(obj, "index") <- no
+    attr(obj, "from") <- nms.x
     obj
 }
 
@@ -92,6 +94,7 @@ haploNet <- function(h)
     link <- cbind(link, .TempletonProb(link[, 3], ncol(h)))
     dimnames(link) <- list(NULL, c("", "", "step", "Prob"))
     attr(link, "freq") <- freq
+    attr(link, "labels") <- rownames(h)
     class(link) <- "haploNet"
     link
 }
@@ -99,8 +102,8 @@ haploNet <- function(h)
 plot.haploNet <-
     function(x, size = 1, col = "black", bg = "white",
              col.link = "black", lwd = 1, lty = 1, pie = NULL,
-             labels = TRUE, scale.ratio = 1, legend = FALSE,
-             fast = FALSE, ...)
+             labels = TRUE, font = 2, cex = 1, scale.ratio = 1,
+             legend = FALSE, fast = FALSE, ...)
 {
     par(xpd = TRUE)
     link <- x[, 1:2]
@@ -330,11 +333,8 @@ if (!fast) {
         for (i in 1:n)
             floating.pie.asp(xx[i], yy[i], pie[i, ], radius = size[i]/2)
     }
-    if (labels) {
-        txt <- rownames(x)
-        if (is.null(txt)) txt <- as.character(as.roman(1:n))
-        text(xx, yy, txt, font = 2)
-    }
+    if (labels)
+        text(xx, yy, attr(x, "labels"), font = font, cex = cex)
     if (legend[1]) {
         if (is.logical(legend)) {
             cat("Click where you want to draw the legend\n")
@@ -367,4 +367,16 @@ plot.haplotype <- function(x, ...)
 {
     barplot(sapply(attr(x, "index"), length), xlab = "Haplotype",
             ylab = "Number", names.arg = rownames(x), ...)
+}
+
+print.haplotype <- function(x, ...)
+{
+    d <- dim(x)
+    DF <- sapply(attr(x, "index"), length)
+    names(DF) <- rownames(x)
+    cat("\nHaplotypes extracted from:", attr(x, "from"), "\n\n")
+    cat("    Number of haplotypes:", d[1], "\n")
+    cat("         Sequence length:", d[2], "\n\n")
+    cat("Haplotype labels and numbers:\n\n")
+    print(DF)
 }

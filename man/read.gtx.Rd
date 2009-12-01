@@ -2,7 +2,7 @@
 \alias{read.gtx}
 \title{Read Genetix Data Files}
 \description{
-  This function reads allelic data from a Genetix file (*.gtx).
+  This function reads allelic data from a Genetix file (.gtx).
 }
 \usage{
 read.gtx(file)
@@ -12,12 +12,13 @@ read.gtx(file)
     or a quoted string.}
 }
 \value{
-  a data frame with class \code{c("loci", "data.frame")}.
+  A data frame with class \code{c("loci", "data.frame")}.
 }
 \author{Emmanuel Paradis}
 \note{
-  The package \pkg{adegenet} has a similar function, but it
-  returns an object of class \code{"genind"}.
+  The package \pkg{adegenet} has a similar function,
+  \code{\link[adegenet]{read.genetix}}, but it returns an object of
+  class \code{"genind"}.
 }
 \references{
   Belkhir, K., Borsa, P., Chikhi, L., Raufaste, N. and Bonhomme,

@@ -1,3 +1,43 @@
+		CHANGES IN PEGAS VERSION 0.3
+
+
+NEW FEATURES
+
+    o The new function edit.loci allows to edit allelic data frame while
+      keeping the attributes correct (which edit.data.frame doesn't).
+
+    o There are new rbind() and cbind() methods for objects of class
+      "loci".
+
+    o There is a print 'method' for the class "haplotype".
+
+    o `[.loci` has now an option 'drop = TRUE'.
+
+    o There is a vignette detailing how to read allelic data files of
+      various formats into R: type vignette("ReadingFiles") in R.
+
+
+BUG FIXES
+
+    o amova() did not compute SSD correctly with a single level.
+
+    o getAlleles() did not work correctly.
+
+    o read.loci() did not work when `col.pop' was used.
+
+    o Checking for ordered alleles did not work (i.e, A/a and a/A were
+      treated as different genotypes: they are now pooled).
+
+    o The display of haplotype labels by plot.haploNet() was not
+      effective.
+
+
+OTHER CHANGES
+
+    o read.loci() loses the `skip' option which is replaced by `...'.
+
+
+
 		CHANGES IN PEGAS VERSION 0.2
 
 

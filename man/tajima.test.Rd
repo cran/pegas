@@ -14,7 +14,7 @@ tajima.test(x)
 \details{
 }
 \value{
-  a list with three numeric values:
+  A list with three numeric values:
   \item{D}{Tajima's \emph{D} statistic.}
   \item{Pval.normal}{the p-value assuming that \emph{D} follows a normal
     distribution with mean zero and variance one.}

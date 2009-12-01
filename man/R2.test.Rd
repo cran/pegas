@@ -9,10 +9,10 @@
 R2.test(x, B = 1000, theta = 1, plot = TRUE, quiet = FALSE, ...)
 }
 \arguments{
-  \item{x}{a DNA matrix as an object of class \code{"DNAbin"}.}
+  \item{x}{a DNA matrix (object of class \code{"DNAbin"}).}
   \item{B}{the number of replicates used for the simulation procedure.}
-  \item{theta}{the value of the \eqn{theta}{theta} population parameter
-    used in simulation procedure.}
+  \item{theta}{the value of the \eqn{\theta}{theta} population parameter
+    used in the simulation.}
   \item{plot}{a logical value specifying whether to plot the results
     (\code{TRUE} by default).}
   \item{quiet}{a logical value specifying whether to not display the
@@ -41,5 +41,9 @@ R2.test(x, B = 1000, theta = 1, plot = TRUE, quiet = FALSE, ...)
 }
 \seealso{
   \code{\link[ape]{read.dna}}, \code{\link[ape]{dist.dna}}
+}
+\examples{
+data(woodmouse)
+R2.test(woodmouse, quiet = TRUE)
 }
 \keyword{htest}

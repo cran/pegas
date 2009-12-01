@@ -13,10 +13,10 @@ theta.s(s, n, variance = FALSE)
 }
 \description{
   This function computes the population parameter THETA using the
-  number of segregating sites \code{s} in a sample of \code{n} DNA sequences.
+  number of segregating sites \eqn{s} in a sample of \eqn{n} DNA sequences.
 }
 \value{
-  a numeric vector of length one with the estimated theta (the default),
+  A numeric vector of length one with the estimated theta (the default),
   or of length two if the standard error is returned
   (\code{variance = TRUE}).
 }
@@ -32,7 +32,7 @@ theta.s(s, n, variance = FALSE)
   Tajima, F. (1989) Statistical method for testing the neutral mutation
   hypothesis by DNA polymorphism. \emph{Genetics}, \bold{123}, 585--595.
 }
-\author{Emmanuel Paradis \email{Emmanuel.Paradis@mpl.ird.fr}}
+\author{Emmanuel Paradis}
 \seealso{
   \code{\link{theta.h}}, \code{\link{theta.k}},
   \code{\link[ape]{seg.sites}}, \code{\link{nuc.div}}, \code{\link{theta.tree}}

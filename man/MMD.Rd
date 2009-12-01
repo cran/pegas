@@ -14,8 +14,8 @@ MMD(x, xlab = "Distance", main = "", rug = TRUE,
   \item{x}{a set of DNA sequences (object of class \code{"DNAbin"}).}
   \item{xlab}{the label for the x-axis.}
   \item{main}{the title (none by default).}
-  \item{rug}{a logical specifying whether to add a rug of the distances
-    on the horizontal axis (see \code{\link[graphics]{rug}}).}
+  \item{rug}{a logical specifying whether to add a rug of the pairwise
+    distances on the horizontal axis (see \code{\link[graphics]{rug}}).}
   \item{legend}{a logical specifying whether to draw a legend.}
   \item{lcol}{the colour used for the empirical density curve.}
   \item{\dots}{further arguments passed to \code{hist}.}

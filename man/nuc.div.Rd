@@ -19,7 +19,7 @@ nuc.div(x, variance = FALSE, pairwise.deletion = FALSE)
 \details{
   The nucleotide diversity is the sum of the number of differences
   between pairs of sequences divided by the number of comparisons
-  (i.e. n(n - 1)/2, where n is the number of sequences).
+  (i.e. \eqn{n(n - 1)/2}, where \eqn{n} is the number of sequences).
 
   The variance of the estimated diversity uses formula (10.9) from Nei
   (1987). This applies only if all sequences are of the same lengths,
@@ -27,13 +27,13 @@ nuc.div(x, variance = FALSE, pairwise.deletion = FALSE)
   estimate may be in order if you insist on using the latter option.
 }
 \value{
-  A numeric vector with one or two values (if \code{variance = TRUE}).
+  A numeric vector with one or two values if \code{variance = TRUE}.
 }
 \references{
   Nei, M. (1987) \emph{Molecular evolutionary genetics}. New York:
   Columbia University Press.
 }
-\author{Emmanuel Paradis \email{Emmanuel.Paradis@mpl.ird.fr}}
+\author{Emmanuel Paradis}
 \seealso{
   \code{\link[ape]{base.freq}}, \code{\link[ape]{GC.content}},
   \code{\link{theta.s}}, \code{\link[ape]{seg.sites}}

@@ -29,6 +29,11 @@ theta.tree(phy, theta, fixed = FALSE, log = TRUE)
   then the [log-]likelihood values are returned corresponding to each
   value in \code{theta}.
 
+  The present implementation does a numerical optimisation of the
+  log-likelihood function (with \code{\link[stats]{nlminb}}) with the
+  first partial derivative as gradient. It is possible to solve the
+  latter and have a direct analytical MLE of \eqn{\theta}{THETA} (and
+  its standard-error), but this does not seem to be faster.
 }
 \value{
   If \code{fixed = FALSE}, a list with two elements:
@@ -42,6 +47,10 @@ theta.tree(phy, theta, fixed = FALSE, log = TRUE)
 \references{
   Kingman, J. F. C. (1982) The coalescent. \emph{Stochastic Processes
   and their Applications}, \bold{13}, 235--248.
+
+  Kingman, J. F. C. (1982) On the genealogy of large
+  populations. \emph{Journal of Applied Probability}, \bold{19A},
+  27--43.
 
   Wakeley, J. (2009) Coalescent Theory: An Introduction. Greenwood
   Village, CO: Roberts and Company Publishers.

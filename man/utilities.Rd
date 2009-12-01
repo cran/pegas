@@ -5,7 +5,7 @@
 \alias{expand.genotype}
 \title{Utily Functions for pegas}
 \description{
-  The first three functions extract information on loci.
+  The first three functions extract information on loci;
   \code{expand.genotype} creates a table of all possible genotypes given
   a set of alleles.
 }
@@ -42,6 +42,11 @@ expand.genotype(n, alleles = NULL, ploidy = 2, matrix = FALSE)
 }
 \author{Emmanuel Paradis}
 \examples{
+require(adegenet)
+data(nancycats)
+X <- as.loci(nancycats)[, 2:3]
+getAlleles(X)
+getGenotypes(X)
 expand.genotype(2)
 expand.genotype(2, LETTERS[1:3])
 expand.genotype(3, ploidy = 4)

@@ -3,14 +3,14 @@
 \alias{plot.haploNet}
 \title{Haplotype Networks}
 \description{
-  \code{haploNet} computes an haplotype network. There is a plot method.
+  \code{haploNet} computes a haplotype network. There is a plot method.
 }
 \usage{
 haploNet(h)
 \method{plot}{haploNet}(x, size = 1, col = "black", bg = "white",
-             col.link = "black", lwd = 1, lty = 1, pie = NULL,
-             labels = TRUE, scale.ratio = 1, legend = FALSE,
-             fast = FALSE, ...)
+     col.link = "black", lwd = 1, lty = 1, pie = NULL,
+     labels = TRUE, font = 2, cex = 1, scale.ratio = 1,
+     legend = FALSE, fast = FALSE, ...)
 }
 \arguments{
   \item{h}{an object of class \code{"haplotype"}.}
@@ -28,9 +28,12 @@ haploNet(h)
     recycled.}
   \item{lty}{idem for the line types.}
   \item{pie}{a matrix used to draw pie charts for each haplotype; it
-    must have as many rows than there is haplotypes.}
+    must have as many rows as there is haplotypes.}
   \item{labels}{a logical specifying whether to identify the haplotypes
-    with Roman numerals (the default).}
+    with their labels (the default).}
+  \item{font}{the font used for these labels (bold by default); must an
+    integer between 1 and 4.}
+  \item{cex}{a numerical specifying the character expansion of the labels.}
   \item{scale.ratio}{the ratio of the scale of the links representing
     the number of steps on the scale of the circles representing the
     haplotypes. It may be needed to give a value greater than one to
@@ -46,10 +49,13 @@ haploNet(h)
 \value{
   \code{haploNet} returns an object of class \code{"haploNet"} which is
   a matrix where each row represents a link in the network, the first
-  and second columns give the number of linked haplotypes, the third
-  column, named \code{"step"}, gives the number of steps in this link,
-  and the fourth column, named \code{"Prob"}, gives the probability of a
-  parsimonious link as given by Templeton et al. (1992).
+  and second columns give the numbers of the linked haplotypes, the
+  third column, named \code{"step"}, gives the number of steps in this
+  link, and the fourth column, named \code{"Prob"}, gives the
+  probability of a parsimonious link as given by Templeton et
+  al. (1992). There are two additional attributes: \code{"freq"}, the
+  absolute frequencies of each haplotype, and \code{"labels"}, their
+  labels.
 }
 \author{Emmanuel Paradis}
 \references{
@@ -60,6 +66,18 @@ haploNet(h)
 }
 \seealso{
   \code{\link{haplotype}}
+}
+\examples{
+## generate some artificial data from 'woodmouse':
+data(woodmouse)
+x <- woodmouse[sample(15, size = 110, replace = TRUE), ]
+h <- haplotype(x)
+(net <- haploNet(h))
+plot(net)
+## symbol sizes equal to haplotype sizes:
+plot(net, size = attr(net, "freq"), fast = TRUE)
+plot(net, size = attr(net, "freq"))
+plot(net, size=attr(net, "freq"), scale.ratio = 2, cex = 0.8)
 }
 \keyword{models}
 \keyword{hplot}
