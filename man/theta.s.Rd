@@ -25,7 +25,7 @@ theta.s(s, n, variance = FALSE)
   instance with the function \code{seg.sites} (see example below).
 }
 \references{
-  Watterson, G. (1975) On the number of segragating sites in genetical
+  Watterson, G. A. (1975) On the number of segragating sites in genetical
   models without recombination. \emph{Theoretical Population Biology},
   \bold{7}, 256--276.
 

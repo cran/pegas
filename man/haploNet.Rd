@@ -27,8 +27,8 @@ haploNet(h)
   \item{lwd}{a numeric vector giving the width of the links; eventually
     recycled.}
   \item{lty}{idem for the line types.}
-  \item{pie}{a matrix used to draw pie charts for each haplotype; it
-    must have as many rows as there is haplotypes.}
+  \item{pie}{a matrix used to draw pie charts for each haplotype; its
+    number of rows must be equal to the number of haplotypes.}
   \item{labels}{a logical specifying whether to identify the haplotypes
     with their labels (the default).}
   \item{font}{the font used for these labels (bold by default); must an

@@ -15,7 +15,7 @@ R2.test <- function(x, B = 1000, theta = 1, plot = TRUE, quiet = FALSE, ...)
     ss <- seg.sites(x)
     U <- numeric(n)
     for (i in 1:n) for (j in ss)
-        if (all(x[i, j] != x[-i, j])) U[i] <- U[i] + 1
+        if (all(x[i, j, drop = TRUE] != x[-i, j])) U[i] <- U[i] + 1
     U <- (U - k/2)^2
     R2.obs <- sqrt(sum(U)/n)/length(ss)
     if (B) {

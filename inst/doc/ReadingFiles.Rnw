@@ -134,7 +134,7 @@ integer giving the index of the column that will be labelled
 ``population'' in the returned data; by default there is
 none. \code{col.loci} does the same for the loci; by default all
 columns are treated as loci except if \code{col.pop} is used. Finally
-`\code{\dots}' may any further (named) arguments passed to
+`\code{\dots}' may be any further (named) arguments passed to
 \code{read.table} (e.g., \code{skip} in case there are comments at the
 top of the file).
 

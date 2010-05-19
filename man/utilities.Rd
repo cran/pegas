@@ -25,8 +25,6 @@ expand.genotype(n, alleles = NULL, ploidy = 2, matrix = FALSE)
   \item{matrix}{a logical specifying whether to return the genotypes in
     a matrix or as a character vector.}
 }
-\details{
-}
 \value{
   \code{getPloidy} returns the ploidy level of all loci in an object of
   class \code{"loci"} as a numeric vector.

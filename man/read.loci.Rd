@@ -8,7 +8,7 @@
   labelled ``population'', it is taken as a population variable.
 }
 \usage{
-read.loci(file, header = TRUE, loci.sep = " ", allele.sep = "/",
+read.loci(file, header = TRUE, loci.sep = "", allele.sep = "/",
           col.pop = "none", col.loci = NULL, ...)
 }
 \arguments{
@@ -17,7 +17,7 @@ read.loci(file, header = TRUE, loci.sep = " ", allele.sep = "/",
   \item{header}{a logical specifying whether the first line of the data
     file gives the names of the loci (\code{TRUE} by default).}
   \item{loci.sep}{the character(s) separating the loci (columns) in the
-    data file (a space by default).}
+    data file (a white space by default).}
   \item{allele.sep}{the character(s) separating the alleles for each locus
     in the data file (a forward slash by default).}
   \item{col.pop}{specifies whether one of the column of the data file

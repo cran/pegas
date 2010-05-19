@@ -11,8 +11,6 @@ tajima.test(x)
 \arguments{
   \item{x}{a set of DNA sequences (object of class \code{"DNAbin"}).}
 }
-\details{
-}
 \value{
   A list with three numeric values:
   \item{D}{Tajima's \emph{D} statistic.}

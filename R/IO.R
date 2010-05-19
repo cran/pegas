@@ -1,14 +1,14 @@
-## IO.R (2009-12-01)
+## IO.R (2010-04-29)
 
 ##   Input/Ouput
 
-## Copyright 2009 Emmanuel Paradis
+## Copyright 2009-2010 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
 
 read.loci <-
-    function(file, header = TRUE, loci.sep = " ", allele.sep = "/",
+    function(file, header = TRUE, loci.sep = "", allele.sep = "/",
              col.pop = "none", col.loci = NULL, ...)
 {
     res <- read.table(file = file, header = header, sep = loci.sep, ...)
