@@ -58,14 +58,16 @@ amova(formula, data = NULL, nperm = 1000, is.squared = FALSE)
   framework with distances.
 }
 \examples{
+### All examples below have 'nperm = 100' for faster execution times.
+### The default 'nperm = 1000' is recommended.
 require(ape)
 data(woodmouse)
 d <- dist.dna(woodmouse)
 g <- factor(c(rep("A", 7), rep("B", 8)))
 p <- factor(c(rep(1, 3), rep(2, 4), rep(3, 4), rep(4, 4)))
-amova(d ~ g/p) # 2 levels
-amova(d ~ p) # 1 level
-amova(d ~ g)
+amova(d ~ g/p, nperm = 100) # 2 levels
+amova(d ~ p, nperm = 100) # 1 level
+amova(d ~ g, nperm = 100)
 
 ## 3 levels:
 pop <- gl(64, 5, labels = paste("pop", 1:64))

@@ -377,6 +377,6 @@ print.haplotype <- function(x, ...)
     cat("\nHaplotypes extracted from:", attr(x, "from"), "\n\n")
     cat("    Number of haplotypes:", d[1], "\n")
     cat("         Sequence length:", d[2], "\n\n")
-    cat("Haplotype labels and numbers:\n\n")
+    cat("Haplotype labels and frequencies:\n\n")
     print(DF)
 }
