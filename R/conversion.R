@@ -1,8 +1,8 @@
-## conversion.R (2009-11-29)
+## conversion.R (2010-11-10)
 
 ##   Conversion Among Allelic Data Classes
 
-## Copyright 2009 Emmanuel Paradis
+## Copyright 2009-2010 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
@@ -38,10 +38,15 @@ genind2loci <- function(x) as.loci.genind(x)
 {
     for (k in attr(x, "locicol")) {
         y <- x[, k]
+        if (is.numeric(y)) { # haploid with alleles coded with numerics
+            x[, k] <- factor(y)
+            next
+        }
         lv <- levels(y)
+        if (!length(grep("/", lv))) next # if haploid
         n <- length(lv)
         if (n == 1) next
-        ## works with all levels of ploidy:
+        ## works with all levels of ploidy > 1:
         a <- matrix(unlist(strsplit(lv, "/")), nrow = n, byrow = TRUE)
         a <- t(apply(a, 1, sort))
         #levels(y) <- apply(a, 1, paste, collapse = "/")
@@ -61,13 +66,25 @@ genind2loci <- function(x) as.loci.genind(x)
 }
 
 as.loci.data.frame <-
-    function(x, allele.sep = "/", col.pop = "none", col.loci = NULL, ...)
+    function(x, allele.sep = "/", col.pop = NULL, col.loci = NULL, ...)
 {
-    if (is.null(col.loci)) col.loci <- 1:ncol(x)
+    if (is.null(col.pop)) {
+        ipop <- which(tolower(names(x)) == "population")
+        if (length(ipop)) col.pop <- ipop
+    }
+    if (is.character(col.pop))
+        col.pop <- which(names(x) == col.pop)
     if (is.numeric(col.pop)) {
         names(x)[col.pop] <- "population"
-        col.loci <- col.loci[-col.pop]
+        x[, col.pop] <- factor(x[, col.pop])
     }
+    if (is.null(col.loci)) {
+        col.loci <- 1:ncol(x)
+        if (is.numeric(col.pop))
+            col.loci <- col.loci[-col.pop]
+    }
+    if (is.character(col.loci))
+        col.loci <- match(col.loci, names(x))
     if (allele.sep != "/") {
         if (allele.sep == "")
             stop("alleles within a genotype must be separated")

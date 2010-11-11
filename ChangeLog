@@ -1,3 +1,20 @@
+		CHANGES IN PEGAS VERSION 0.3-3
+
+
+BUG FIXES
+
+    o read.loci() failed with haploid data. It also failed in some
+      situations with the population column. The default behaviour is now
+      more flexible and more reliable.
+
+    o Variance components were not correctly computed by amova() in the
+      single-level case.
+
+    o print.amova() did not work correctly when amova() was called with
+      'nperm = 0'.
+
+
+
 		CHANGES IN PEGAS VERSION 0.3-2
 
 

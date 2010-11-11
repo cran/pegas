@@ -14,7 +14,7 @@
 as.loci(x, ...)
 \method{as.loci}{genind}(x, ...)
 genind2loci(x)
-\method{as.loci}{data.frame}(x, allele.sep = "/", col.pop = "none", col.loci = NULL, ...)
+\method{as.loci}{data.frame}(x, allele.sep = "/", col.pop = NULL, col.loci = NULL, ...)
 loci2genind(x)
 \method{as.loci}{factor}(x, allele.sep = "/", ...)
 \method{as.loci}{character}(x, allele.sep = "/", ...)
@@ -25,11 +25,12 @@ loci2genind(x)
     \item{allele.sep}{the character(s) separating the alleles for each locus
     in the data file (a forward slash by default).}
   \item{col.pop}{specifies whether one of the column of the data file
-    identifies the population; default \code{"none"}, otherwise an
-    integer giving the number of the column.}
-  \item{col.loci}{a vector of integers specifying the indices of the
-    columns that are loci. By default, all columns are taken as loci
-    except the one labelled "population", if present.}
+    identifies the population; default \code{NULL}, otherwise an integer
+    or a character giving the number or the name of the column.}
+  \item{col.loci}{a vector of integers or of characters specifying the
+    indices or the names of the columns that are loci. By default, all
+    columns are taken as loci except the one labelled "population", if
+    present or specified.}
   \item{\dots}{further arguments to be passed to or from other methods.}
 }
 \details{

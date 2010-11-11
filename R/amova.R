@@ -1,8 +1,8 @@
-## amova.R (2009-10-02)
+## amova.R (2010-07-15)
 
 ##   Analysis of Molecular Variance
 
-## Copyright 2009 Emmanuel Paradis
+## Copyright 2010 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
@@ -94,9 +94,11 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
         ncoef
     }
 
-    getVarComp <- function(MSD, Nlv, ncoef, n) {
+    getVarComp <- function(MSD, Nlv, ncoef) {
         ## get the variance components bottom-up
-        if (Nlv == 1) sigma2 <- c((MSD[1] - MSD[2])/n, MSD[2]) else {
+        if (Nlv == 1)
+            sigma2 <- c((MSD[1] - MSD[2])/ncoef, MSD[2]) # 'n' changed to 'ncoef' (fix by Qixin He, 2010-07-15)
+        else {
             sigma2 <- numeric(Nlv + 1)
             if (Nlv == 2) {
                 sigma2[3] <- MSD[3]
@@ -120,7 +122,7 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
     df <- getDF(gr, Nlv, N, n)
     MSD <- SSD/df
     ncoef <- getNcoefficient(gr, Nlv, N, n)
-    sigma2 <- getVarComp(MSD, Nlv, ncoef, n)
+    sigma2 <- getVarComp(MSD, Nlv, ncoef)
 
     ## output the results:
     res <- list(tab = data.frame(SSD = SSD, MSD = MSD, df = df,
@@ -139,7 +141,7 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
             ## the hierarchical structure is not changed so just
             ## need to recalculate the SSD and var comp
             rSSD <- getSSD(rY, gr, Nlv, N, n)
-            rSigma2[i, j] <- getVarComp(rSSD/df, Nlv, ncoef, n)[j]
+            rSigma2[i, j] <- getVarComp(rSSD/df, Nlv, ncoef)[j]
         }
         if (Nlv > 1) {
             ## for the lowest level, we just permute individuals within the
@@ -151,7 +153,7 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
                 rind <- unlist(lapply(L, sample))
                 rY <- y[rind, rind]
                 rSSD <- getSSD(rY, gr, Nlv, N, n)
-                rSigma2[i, j] <- getVarComp(rSSD/df, Nlv, ncoef, n)[j]
+                rSigma2[i, j] <- getVarComp(rSSD/df, Nlv, ncoef)[j]
             }
             if (Nlv > 2) {
                 for (j in (Nlv - 1):2) {
@@ -167,7 +169,7 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
                         rSSD <- getSSD(rY, rGR, Nlv, rN, n)
                         rDF <- getDF(rGR, Nlv, rN, n)
                         rNcoef <- getNcoefficient(rGR, Nlv, rN, n)
-                        rSigma2[i, j] <- getVarComp(rSSD/rDF, Nlv, rNcoef, n)[j]
+                        rSigma2[i, j] <- getVarComp(rSSD/rDF, Nlv, rNcoef)[j]
                     }
                 }
             }
@@ -181,7 +183,7 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
                 rSSD <- getSSD(rY, rGR, Nlv, rN, n)
                 rDF <- getDF(rGR, Nlv, rN, n)
                 rNcoef <- getNcoefficient(rGR, Nlv, rN, n)
-                rSigma2[i, 1] <- getVarComp(rSSD/rDF, Nlv, rNcoef, n)[1]
+                rSigma2[i, 1] <- getVarComp(rSSD/rDF, Nlv, rNcoef)[1]
             }
         }
         P <- numeric(Nlv + 1)
@@ -200,8 +202,10 @@ print.amova <- function(x, ...)
     cat("\n")
     print(x$tab)
     cat("\nVariance components:\n")
-    x$varcomp["Error", "P.value"] <- NA
-    printCoefmat(x$varcomp, na.print = "")
+    if (is.data.frame(x$varcomp)) {
+        x$varcomp["Error", "P.value"] <- NA
+        printCoefmat(x$varcomp, na.print = "")
+    } else print(x$varcomp)
     cat("\nVariance coefficients:\n")
     print(x$varcoef)
     cat("\n")

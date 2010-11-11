@@ -100,7 +100,7 @@ rbind.loci <- function(...) NextMethod("rbind")
 ## No need to drop the class cause it calls rbind.data.frame.
 ## The successive bindings eventually reorders the columns to
 ## agree with the 1st data frame, AND its "locicol" attribute
-## is kept, so need to change anything.
+## is kept, so no need to change anything.
 
 cbind.loci <- function(...)
 {

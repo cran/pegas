@@ -268,7 +268,7 @@ free spreadsheet
 editors such as OpenOffice's Calc or Gnumeric. Several solutions to
 get such data into R are given below. I assume that the allelic data
 in the spreadsheet are in a tabular form similar to what we have seen
-in §~\ref{sec:tab}, so the objective is to have them in R as a
+in § \ref{sec:tab}, so the objective is to have them in R as a
 \code{"loci"} object.
 
 \begin{enumerate}
@@ -306,7 +306,7 @@ in §~\ref{sec:tab}, so the objective is to have them in R as a
   options that in \code{read.loci} can be used (see \code{?as.loci}.).
 
   In my experience, \code{read.xls} works well with small to moderate
-  size Excel files but can be very slow with bigger files ($>$ 10~MB).
+  size Excel files but can be very slow with bigger files ($>$ 10 MB).
 \end{enumerate}
 
 \section{Editing and Writing Genetic Data Files}

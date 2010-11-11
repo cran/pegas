@@ -1,4 +1,4 @@
-## IO.R (2010-04-29)
+## IO.R (2010-11-10)
 
 ##   Input/Ouput
 
@@ -9,9 +9,27 @@
 
 read.loci <-
     function(file, header = TRUE, loci.sep = "", allele.sep = "/",
-             col.pop = "none", col.loci = NULL, ...)
+             col.pop = NULL, col.loci = NULL, ...)
 {
     res <- read.table(file = file, header = header, sep = loci.sep, ...)
+### the lines below are in case 'row.names' is used so the col#'s
+### must be, possibly, decremented by one
+    ddd <- list(...)
+    row.nms <- ddd$row.names
+    if (!is.null(row.nms)) {
+        row.nms.idx <- NULL
+        if (is.character(row.nms) && length(row.nms) == 1) {
+            hdr <- strsplit(scan(file, what = "", n = 1), loci.sep)[[1]]
+            row.nms.idx <- which(hdr == row.nms)
+        }
+        if (is.numeric(row.nms)) row.nms.idx <- row.nms
+        if (is.numeric(col.loci) && is.numeric(row.nms.idx))
+            col.loci[col.loci > row.nms.idx] <-
+                col.loci[col.loci > row.nms.idx] - 1L
+        if (is.numeric(col.pop) && !is.null(row.nms.idx))
+            col.pop[col.pop > row.nms.idx] <-
+                col.pop[col.pop > row.nms.idx] - 1L
+    }
     as.loci.data.frame(res, allele.sep = allele.sep, col.pop = col.pop,
                        col.loci = col.loci)
 }

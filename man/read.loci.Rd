@@ -5,11 +5,11 @@
   This function reads allelic data from a text file: rows are
   individuals, and columns are loci and optional variables. By default,
   the first line of the file gives the locus names. If one column is
-  labelled ``population'', it is taken as a population variable.
+  labelled `population', it is taken as a population variable.
 }
 \usage{
 read.loci(file, header = TRUE, loci.sep = "", allele.sep = "/",
-          col.pop = "none", col.loci = NULL, ...)
+          col.pop = NULL, col.loci = NULL, ...)
 }
 \arguments{
   \item{file}{a file name specified by either a variable of mode character,
@@ -21,12 +21,17 @@ read.loci(file, header = TRUE, loci.sep = "", allele.sep = "/",
   \item{allele.sep}{the character(s) separating the alleles for each locus
     in the data file (a forward slash by default).}
   \item{col.pop}{specifies whether one of the column of the data file
-    identifies the population; default \code{"none"}, otherwise an
-    integer giving the number of the column.}
-  \item{col.loci}{a vector of integers specifying the indices of the
-    columns that are loci. By default, all columns are taken as loci
-    except one labelled "population", if present.}
-  \item{\dots}{further arguments passed to \code{read.table}.}
+    identifies the population. By default, if one column is labelled
+    `population' (case-insensitive), it is taken as the population
+    variable; otherwise an integer giving the number of the column or a
+    character string giving its name. It is eventually renamed
+    `population' and transformed as a factor.}
+  \item{col.loci}{a vector of integers or characters specifying the
+    indices or the names of the columns that are loci. By default, all
+    columns are taken as loci except the population one, if present or
+    specified.}
+  \item{\dots}{further arguments passed to \code{read.table} (e.g.,
+    \code{row.names}).}
 }
 \details{
   The rownames of the returned object identify the individual genotypes;
