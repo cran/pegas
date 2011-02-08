@@ -1,5 +1,6 @@
 \name{read.loci}
 \alias{read.loci}
+\alias{loci}
 \title{Read Allelic Data Files}
 \description{
   This function reads allelic data from a text file: rows are

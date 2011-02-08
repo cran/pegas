@@ -1,3 +1,13 @@
+		CHANGES IN PEGAS VERSION 0.3-4
+
+
+OTHER CHANGES
+
+    o The help command ?loci now points to the man page of read.loci()
+      where this class is described.
+
+
+
 		CHANGES IN PEGAS VERSION 0.3-3
 
 

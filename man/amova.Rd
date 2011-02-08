@@ -69,11 +69,12 @@ amova(d ~ g/p, nperm = 100) # 2 levels
 amova(d ~ p, nperm = 100) # 1 level
 amova(d ~ g, nperm = 100)
 
-## 3 levels:
+## 3 levels (quite slow):
+\dontrun{
 pop <- gl(64, 5, labels = paste("pop", 1:64))
 region <- gl(16, 20, labels = paste("region", 1:16))
 conti <- gl(4, 80, labels = paste("conti", 1:4))
 dd <- as.dist(matrix(runif(320^2), 320))
 amova(dd ~ conti/region/pop, nperm = 100)
-}
+}}
 \keyword{models}

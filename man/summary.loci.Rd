@@ -44,6 +44,9 @@
 
   An object of class \code{"loci"} can be edited in the R data editor
   with, e.g., \code{fix(x)} or \code{x <- edit(x)}.
+
+  \code{summary.loci} computes the absolute frequencies (counts); see
+  the examples on how to compute the relative frequencies (proportions).
 }
 \value{
   \code{summary.loci} returns a list with the genes as names and each
@@ -65,6 +68,9 @@ x <- as.loci(nancycats)
 s <- summary(x)
 plot(s, layout=20, las=2)
 layout(1)
+
+## compute the relative frequencies:
+rapply(s, function(x) x/sum(x), how = "replace")
 }
 \keyword{manip}
 \keyword{hplot}
