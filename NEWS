@@ -1,3 +1,25 @@
+		CHANGES IN PEGAS VERSION 0.4
+
+
+NEW FEATURES
+
+    o The new function rr.test by Alastair Potts performs Tajima's test
+      of a molecular clock (Genetics, 1993, 135:599).
+
+    o haploNet() has a new argument 'd = NULL' to specify an
+      alternative distance matrix among haplotypes.
+
+    o There are two new functions, as.network.haploNet() and
+      as.igraph.haploNet() for converting networks of class
+      "haploNet" towards other packages.
+
+
+BUG FIXES
+
+    o plot.haploNet() has now by default asp = 1.
+
+
+
 		CHANGES IN PEGAS VERSION 0.3-4
 
 

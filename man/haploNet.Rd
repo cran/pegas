@@ -1,19 +1,25 @@
 \name{haploNet}
 \alias{haploNet}
 \alias{plot.haploNet}
+\alias{as.network.haploNet}
+\alias{as.igraph.haploNet}
 \title{Haplotype Networks}
 \description{
-  \code{haploNet} computes a haplotype network. There is a plot method.
+  \code{haploNet} computes a haplotype network. There is a plot method
+  and two conversion functions towards other packages.
 }
 \usage{
-haploNet(h)
+haploNet(h, d = NULL)
 \method{plot}{haploNet}(x, size = 1, col = "black", bg = "white",
      col.link = "black", lwd = 1, lty = 1, pie = NULL,
      labels = TRUE, font = 2, cex = 1, scale.ratio = 1,
-     legend = FALSE, fast = FALSE, ...)
+     asp = 1, legend = FALSE, fast = FALSE, ...)
+\method{as.network}{haploNet}(x, directed = FALSE, ...)
+\method{as.igraph}{haploNet}(x, directed = FALSE, use.labels = TRUE, ...)
 }
 \arguments{
   \item{h}{an object of class \code{"haplotype"}.}
+  \item{d}{an object giving the distances among haplotypes (see details).}
   \item{x}{an object of class \code{"haploNet"}.}
   \item{size}{a numeric vector giving the diameter of the circles
     representing the haplotypes: this is in the same unit than the links
@@ -31,20 +37,33 @@ haploNet(h)
     number of rows must be equal to the number of haplotypes.}
   \item{labels}{a logical specifying whether to identify the haplotypes
     with their labels (the default).}
-  \item{font}{the font used for these labels (bold by default); must an
-    integer between 1 and 4.}
+  \item{font}{the font used for these labels (bold by default); must be
+    an integer between 1 and 4.}
   \item{cex}{a numerical specifying the character expansion of the labels.}
   \item{scale.ratio}{the ratio of the scale of the links representing
     the number of steps on the scale of the circles representing the
     haplotypes. It may be needed to give a value greater than one to
     avoid overlapping circles.}
+  \item{asp}{the aspect ratio of the plot. Do not change the default
+    unless you want to distort your network.}
   \item{legend}{a logical specifying whether to draw the legend, or a
     vector of length two giving the coordinates where to draw the
     legend; \code{FALSE} by default. If \code{TRUE}, the user is asked
     to click where to draw the legend.}
   \item{fast}{a logical specifying whether to optimize the spacing of
     the circles; \code{FALSE} by default.}
+  \item{directed}{a logical specifying whether the network is directed
+    (\code{FALSE} by default).}
+  \item{use.labels}{a logical specifying whether to use the original
+    labels in the returned network.}
   \item{\dots}{further arguments passed to \code{plot}.}
+}
+\details{
+  By default, the haplotype network is built using an infinite site
+  model (i.e., uncorrected or Hamming distance). Users may specify their
+  own distance with the argument \code{d}. Currently, there is no check
+  of labels, so the user must make sure that the distances are ordered
+  in the same way than the haplotypes.
 }
 \value{
   \code{haploNet} returns an object of class \code{"haploNet"} which is
@@ -56,6 +75,9 @@ haploNet(h)
   al. (1992). There are two additional attributes: \code{"freq"}, the
   absolute frequencies of each haplotype, and \code{"labels"}, their
   labels.
+
+  \code{as.network} and \code{as.igraph} return objects of the
+  appropriate class.
 }
 \author{Emmanuel Paradis}
 \references{

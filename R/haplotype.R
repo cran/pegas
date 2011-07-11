@@ -1,8 +1,8 @@
-## haplotype.R (2009-12-01)
+## haplotype.R (2011-07-11)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
-## Copyright 2009 Emmanuel Paradis
+## Copyright 2009-2011 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
@@ -64,12 +64,15 @@ haplotype <- function(x, labels = NULL)
     obj
 }
 
-haploNet <- function(h)
+haploNet <- function(h, d = NULL)
 {
+    if (!inherits(h, "haplotype"))
+        stop("'h' must be of class 'haplotype'")
     freq <- sapply(attr(h, "index"), length)
     n <- length(freq) # number of haplotypes
     link <- matrix(0, 0, 3)
-    d <- dist.dna(h, "N", as.matrix = TRUE)
+    if (is.null(d)) d <- dist.dna(h, "N")
+    d <- as.matrix(d)
     d[col(d) >= row(d)] <- NA # put NA's in the diag and above-diag elts
     dimnames(d) <- list(1:n, 1:n)
     step <- 1
@@ -103,7 +106,7 @@ plot.haploNet <-
     function(x, size = 1, col = "black", bg = "white",
              col.link = "black", lwd = 1, lty = 1, pie = NULL,
              labels = TRUE, font = 2, cex = 1, scale.ratio = 1,
-             legend = FALSE, fast = FALSE, ...)
+             asp = 1, legend = FALSE, fast = FALSE, ...)
 {
     par(xpd = TRUE)
     link <- x[, 1:2]
@@ -323,7 +326,7 @@ if (!fast) {
 }
 
     plot(xx, yy, type = "n", xlab = "", ylab = "",
-         axes = FALSE, bty = "n", ...)
+         axes = FALSE, bty = "n", asp = asp, ...)
     segments(xx[l1], yy[l1], xx[l2], yy[l2], lwd = lwd,
              lty = lty, col = col.link)
     if (is.null(pie))
@@ -379,4 +382,21 @@ print.haplotype <- function(x, ...)
     cat("         Sequence length:", d[2], "\n\n")
     cat("Haplotype labels and frequencies:\n\n")
     print(DF)
+}
+
+as.network.haploNet <- function(x, directed = FALSE, ...)
+{
+    res <- network(x[, 1:2], directed = directed, ...)
+    network.vertex.names(res) <- attr(x, "labels")
+    res
+}
+
+as.igraph.haploNet <- function(x, directed = FALSE, use.labels = TRUE, ...)
+{
+    directed <- directed
+    y <- x[, 1:2]
+    y <-
+        if (use.labels) matrix(attr(x, "labels")[y], ncol = 2)
+        else y - 1L
+    graph.edgelist(y, directed = directed, ...)
 }

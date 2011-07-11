@@ -21,7 +21,7 @@ Population and Evolutionary Genetics Analysis System
   tested more or less thoroughly.
 }
 \author{
-  Emmanuel Paradis
+  Emmanuel Paradis, Alastair Potts
 
   Maintainer: Emmanuel Paradis
 }
