@@ -52,8 +52,8 @@ site.spectrum(x, folded = TRUE, outgroup = 1)
 }
 \author{Emmanuel Paradis}
 \references{
-  Wakeley, J. (2009) Coalescent Theory: An Introduction. Greenwood
-  Village, CO: Roberts and Company Publishers.
+  Wakeley, J. (2009) \emph{Coalescent Theory: An Introduction.}
+  Greenwood Village, CO: Roberts and Company Publishers.
 }
 \seealso{
   \code{\link[ape]{DNAbin}} for manipulation of DNA sequences in R,

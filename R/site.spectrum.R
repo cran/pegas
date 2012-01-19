@@ -1,8 +1,8 @@
-## site.spectrum.R (2009-09-26)
+## site.spectrum.R (2011-07-19)
 
 ##   Site Frequency Spectrum
 
-## Copyright 2009 Emmanuel Paradis
+## Copyright 2009-2011 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
@@ -35,11 +35,11 @@ site.spectrum <- function(x, folded = TRUE, outgroup = 1)
         spectrum <- integer(n - 1)
         ss <- seg.sites(x[-outgroup, ])
         for (i in ss) {
-            anc <- x[outgroup, i]
+            anc <- x[outgroup, i, drop = TRUE]
             if (!anc %in% as.raw(c(24, 40, 72, 136)))
                 ambiguous.outgroup.state <- ambiguous.outgroup.state + 1L
             else {
-                j <- sum(x[-outgroup, i] == anc)
+                j <- sum(x[-outgroup, i, drop = TRUE] == anc)
                 spectrum[j] <- spectrum[j] + 1L
             }
         }

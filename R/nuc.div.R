@@ -1,8 +1,8 @@
-## nuc.div.R (2009-09-18)
+## nuc.div.R (2012-01-19)
 
 ##   Nucleotide Diversity
 
-## Copyright 2009 Emmanuel Paradis
+## Copyright 2009-2012 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
@@ -16,7 +16,7 @@ nuc.div <- function(x, variance = FALSE, pairwise.deletion = FALSE)
     ans <- sum(dist.dna(x, "raw", pairwise.deletion = pairwise.deletion))/
         (n*(n - 1)/2)
     if (variance) {
-        var <- (n + 1)*ans/(3*(n + 1)*dim(x)[2]) + 2*(n^2 + n + 3)*ans/(9*n*(n - 1))
+        var <- (n + 1)*ans/(3*(n - 1)*dim(x)[2]) + 2*(n^2 + n + 3)*ans^2/(9*n*(n - 1))
         ans <- c(ans, var)
     }
     ans

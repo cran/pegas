@@ -1,3 +1,15 @@
+		CHANGES IN PEGAS VERSION 0.4-1
+
+
+BUG FIXES
+
+    o site.spectrum(, folded = FALSE) failed.
+
+    o The variances returned by nuc.div() were inflated (thanks to
+      Paulina Ossa for the report).
+
+
+
 		CHANGES IN PEGAS VERSION 0.4
 
 

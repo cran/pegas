@@ -201,7 +201,7 @@ different populations. So, they store genotypes at several loci and an
 individual categorical variable. Additionally, the \genetix\ and
 \struc\ formats allow for individual labels.
 
-\adegenet\ includes four data files in each of these format of the
+\adegenet\ includes four data files in each of these formats of the
 same microsatellite data set. These files can be displayed in the R
 console with:
 

@@ -1,4 +1,4 @@
-exportPattern(".+")
+exportPattern("^[^\\.]")
 
 import(ape)
 

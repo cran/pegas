@@ -52,8 +52,8 @@ theta.tree(phy, theta, fixed = FALSE, log = TRUE)
   populations. \emph{Journal of Applied Probability}, \bold{19A},
   27--43.
 
-  Wakeley, J. (2009) Coalescent Theory: An Introduction. Greenwood
-  Village, CO: Roberts and Company Publishers.
+  Wakeley, J. (2009) \emph{Coalescent Theory: An Introduction.}
+  Greenwood Village, CO: Roberts and Company Publishers.
 }
 \author{
   Emmanuel Paradis
