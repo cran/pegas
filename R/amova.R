@@ -1,8 +1,8 @@
-## amova.R (2010-07-15)
+## amova.R (2012-05-07)
 
 ##   Analysis of Molecular Variance
 
-## Copyright 2010 Emmanuel Paradis
+## Copyright 2010-2012 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
@@ -174,11 +174,17 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
                 }
             }
             ## for the highest level permute the level below
-            L <- lapply(levels(gr[, 1]), function(x) which(gr[, 1] == x))
+###L <- lapply(levels(gr[, 1]), function(x) which(gr[, 1] == x))
+            Higr <- gr[, 1][cumsum(N[[2]])] # a quel niveau le plus eleve appartient le 2nd niveau?
+            N2 <- N[[2]] # les effectifs correspondants
+            rGR <- gr # on fait une copie de gr dont la 1ere colonne sera changee ci-dessous
             for (i in 1:nperm) {
-                rind <- unlist(sample(L))
-                rY <- y[rind, rind]
-                rGR <- gr[rind, ]
+###rind <- unlist(sample(L))
+###rY <- y[rind, rind]
+###rGR <- gr[rind, ]
+                ## par le mapply(rep, sample....) on conserve la structure sous le niveau le plus eleve
+                ## et on assigne les structures a partir du 2nd niveau dans le 1er niveau
+                rGR[, 1] <- unlist(mapply(rep, sample(Higr), each = N[[2]]))
                 rN <- lapply(rGR, tabulate)
                 rSSD <- getSSD(rY, rGR, Nlv, rN, n)
                 rDF <- getDF(rGR, Nlv, rN, n)
@@ -188,7 +194,7 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
         }
         P <- numeric(Nlv + 1)
         for (j in 1:(Nlv + 1))
-            P[j] <- sum(rSigma2[, j] >= sigma2[j])/nperm
+            P[j] <- sum(rSigma2[, j] >= sigma2[j])/(nperm + 1)
         P[Nlv + 1] <- NA
         res$varcomp <- data.frame(sigma2 = res$varcomp, P.value = P)
     }

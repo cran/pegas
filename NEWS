@@ -1,3 +1,13 @@
+		CHANGES IN PEGAS VERSION 0.4-2
+
+
+BUG FIXES
+
+    o amova() did not randomize correctly at the highest level,
+      resulting in P-values that were always equal to 1.
+
+
+
 		CHANGES IN PEGAS VERSION 0.4-1
 
 
@@ -102,7 +112,7 @@ BUG FIXES
 
     o getAlleles() did not work correctly.
 
-    o read.loci() did not work when `col.pop' was used.
+    o read.loci() did not work when 'col.pop' was used.
 
     o Checking for ordered alleles did not work (i.e, A/a and a/A were
       treated as different genotypes: they are now pooled).
@@ -113,7 +123,7 @@ BUG FIXES
 
 OTHER CHANGES
 
-    o read.loci() loses the `skip' option which is replaced by `...'.
+    o read.loci() loses the 'skip' option which is replaced by '...'.
 
 
 
