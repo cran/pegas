@@ -1,8 +1,8 @@
-## summary.loci.R (2009-11-30)
+## summary.loci.R (2012-07-31)
 
 ##   Print and Summaries of Loci Objects
 
-## Copyright 2009 Emmanuel Paradis
+## Copyright 2009-2012 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
@@ -38,11 +38,6 @@ print.loci <- function(x, details = FALSE, ...)
 
 summary.loci <- function(object, ...)
 {
-    ## modified tabulate to allow NA's
-    tabul <- function(x, n)
-        .C("R_tabulate", x, length(x), n, integer(n),
-           NAOK = TRUE, DUP = FALSE, PACKAGE = "base")[[4]]
-
     L <- attr(object, "locicol")
     ans <- vector("list", length(L))
     names(ans) <- names(object[L])
@@ -51,7 +46,7 @@ summary.loci <- function(object, ...)
         geno <- levels(object[, i])
         alle <- strsplit(geno, "/")
         unialle <- sort(unique(unlist(alle)))
-        l <- tabul(object[, i], length(geno))
+        l <- tabulate(object[, i], length(geno))
         names(l) <- geno
         tab <- matrix(0, length(unialle), length(geno),
                       dimnames = list(unialle, geno))

@@ -41,9 +41,9 @@ Fst(x, pop = NULL)
   \code{\link[adegenet]{fstat}} in \pkg{adegenet}; package \pkg{dirmult}
   on CRAN that implements various estimators of the
   Dirichlet-multinomial distribution, including maximum likekihood and
-  the moments estimator of Weir and Hill (2002);
-  \code{\link[Biodem]{Fst}} in \pkg{Biodem} that caculates
-  \eqn{F_{ST}}{Fst} from a ``kinship matrix''.
+  the moments estimator of Weir and Hill (2002); \code{Fst} in
+  \pkg{Biodem} that caculates \eqn{F_{ST}}{Fst} from a ``kinship
+  matrix''.
 }
 \examples{
 require(adegenet)
