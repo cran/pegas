@@ -2,6 +2,8 @@
 \alias{haplotype}
 \alias{plot.haplotype}
 \alias{print.haplotype}
+\alias{plot.haplotype}
+\alias{[.haplotype}
 \title{Haplotype Extraction and Frequencies}
 \description{
   \code{haplotype} extracts the haplotypes from a set of DNA
@@ -11,6 +13,7 @@
 haplotype(x, labels = NULL)
 \method{plot}{haplotype}(x, ...)
 \method{print}{haplotype}(x, ...)
+\method{[}{haplotype}(x, ...)
 }
 \arguments{
   \item{x}{a set of DNA sequences (as an object of class

@@ -1,13 +1,13 @@
-## theta.R (2009-10-03)
+## theta.R (2012-09-26)
 
 ##   Population Parameter THETA
 
-## theta.h: using homozigosity
+## theta.h: using homozygosity
 ## theta.k: using expected number of alleles
 ## theta.s: using segregating sites in DNA sequences
 ## theta.tree: using a genealogy
 
-## Copyright 2002-2009 Emmanuel Paradis
+## Copyright 2002-2012 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
@@ -21,10 +21,10 @@ theta.h <- function(x, standard.error = FALSE)
     th <- uniroot(f, interval = c(0, 1))$root
     if (standard.error) {
         SE <- (2 + th)^2 * (2 + th)^3 * sdH /
-          HE^2 * (1 + th) * ((2 + th) * (3 + th) * (4 + th) + 10 * (2 + th) + 4)
-        return(c(th, SE))
+            HE^2 * (1 + th) * ((2 + th) * (3 + th) * (4 + th) + 10 * (2 + th) + 4)
+        th <- c(th, SE)
     }
-    else return(th)
+    th
 }
 
 theta.k <- function(x, n = NULL, k = NULL)
@@ -43,8 +43,7 @@ theta.k <- function(x, n = NULL, k = NULL)
         }
     }
     f <- function(th) th * sum(1 / (th + (0:(n - 1)))) - k
-    th <- uniroot(f, interval = c(1e-8, 100))$root
-    return(th)
+    uniroot(f, interval = c(1e-8, 100))$root
 }
 
 theta.s <- function(s, n, variance = FALSE)
@@ -54,12 +53,13 @@ theta.s <- function(s, n, variance = FALSE)
     if (variance) {
         a2 <- sum(1 / (1:(n - 1))^2)
         var.th <- (a1^2 * s + a2 * s^2) / (a1^2 * (a1^2 + a2))
-        return(c(th, var.th))
+        th <- c(th, var.th)
     }
-    else return(th)
+    th
 }
 
-theta.tree <- function(phy, theta, fixed = FALSE, log = TRUE)
+theta.tree <-
+    function(phy, theta, fixed = FALSE, analytical = TRUE, log = TRUE)
 {
     ## coalescent intervals from the oldest to most recent one:
     x <- rev(diff(c(0, sort(branching.times(phy)))))
@@ -72,12 +72,19 @@ theta.tree <- function(phy, theta, fixed = FALSE, log = TRUE)
         res <- sltmp - K * log(theta) - tmp2/theta
         if (!log) res <- exp(res)
     } else {
-        minusLogLik <- function(theta) # vectorized on 'theta'
-            -(sltmp - K*log(theta) - tmp2/theta)
-        gr <- function(theta) K/theta - tmp2/theta^2
-        out <- nlminb(theta[1], minusLogLik, gr,
-                      lower = .Machine$double.eps, upper = Inf)
-        res <- list(theta = out$par, logLik = -out$objective)
+        if (analytical) {
+            theta <- tmp2/K
+            se <- sqrt(-1/(K/theta^2 - 2*tmp2/theta^3))
+            logLik <- sltmp - K * log(theta) - tmp2/theta
+            res <- list(theta = theta, se = se, logLik = logLik)
+        } else {
+            minusLogLik <- function(theta) # vectorized on 'theta'
+                -(sltmp - K*log(theta) - tmp2/theta)
+            gr <- function(theta) K/theta - tmp2/theta^2
+            out <- nlminb(theta[1], minusLogLik, gr,
+                          lower = .Machine$double.eps, upper = Inf)
+            res <- list(theta = out$par, logLik = -out$objective)
+        }
     }
 ### alternative version based on L-BFGS-B
 ###out <- optim(theta[1], minusLogLik, gr, method = "L-BFGS-B",

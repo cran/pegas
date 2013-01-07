@@ -87,7 +87,7 @@ haploNet(h, d = NULL)
   estimation. \emph{Genetics}, \bold{132}, 619--635.
 }
 \seealso{
-  \code{\link{haplotype}}
+  \code{\link{haplotype}}, \code{\link{mst}}
 }
 \examples{
 ## generate some artificial data from 'woodmouse':

@@ -29,7 +29,7 @@ expand.genotype(n, alleles = NULL, ploidy = 2, matrix = FALSE)
   \code{getPloidy} returns the ploidy level of all loci in an object of
   class \code{"loci"} as a numeric vector.
 
-  \code{getAlleles} and \code{getGenotpes} return the alleles and
+  \code{getAlleles} and \code{getGenotypes} return the alleles and
   genotypes, respectively, observed in all loci in an object of class
   \code{"loci"} as a list.
 

@@ -9,7 +9,7 @@
   from a genealogy (coded a as phylogenetic tree) under the coalescent.
 }
 \usage{
-theta.tree(phy, theta, fixed = FALSE, log = TRUE)
+theta.tree(phy, theta, fixed = FALSE, analytical = TRUE, log = TRUE)
 }
 \arguments{
   \item{phy}{an object of class \code{"phylo"}.}
@@ -17,6 +17,10 @@ theta.tree(phy, theta, fixed = FALSE, log = TRUE)
   \item{fixed}{a logical specifying whether to estimate \code{theta}
     (the default), or to return the likelihoods for all values in
     \code{theta}.}
+  \item{analytical}{a logical specifying whether to use analytical
+    formulae to estimate \code{theta} and its standard-error. If
+    \code{FALSE}, a numerical optimisation of the likelihood is
+    performed (this option is ignored if \code{fixed = TRUE})}.
   \item{log}{a logical specifying whether to return the likelihoods on a
     log scale (the default); ignored if \code{fixed = FALSE}.}
 }
@@ -64,6 +68,7 @@ theta.tree(phy, theta, fixed = FALSE, log = TRUE)
 \examples{
 tr <- rcoal(50) # assumes theta = 1
 theta.tree(tr, 10)
+theta.tree(tr, 10, analytical = FALSE) # uses nlminb()
 ## profile log-likelihood:
 THETA <- seq(0.5, 1.5, 0.01)
 logLikelihood <- theta.tree(tr, THETA, fixed = TRUE)

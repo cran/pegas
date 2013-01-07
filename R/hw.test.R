@@ -1,8 +1,8 @@
-## hw.test.R (2009-05-10)
+## hw.test.R (2012-11-20)
 
 ##   Test of Hardy--Weinberg Equilibrium
 
-## Copyright 2009 Emmanuel Paradis
+## Copyright 2009-2012 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
@@ -59,7 +59,7 @@ hw.test <- function(x, B = 1000)
         O[names(x$genotype)] <- x$genotype
         E <- sum(O) * E
         chi2 <- sum((O - E)^2/E)
-        DF <- length(E) - Nall + 1
+        DF <- length(E) - Nall
         c(chi2, DF, 1 - pchisq(chi2, DF))
     }
     test.diploid <- function(x) {
@@ -76,7 +76,7 @@ hw.test <- function(x, B = 1000)
         O[names(x$genotype)] <- x$genotype
         E <- sum(O) * E
         chi2 <- sum((O - E)^2/E)
-        DF <- length(E) - length(nms) + 1
+        DF <- length(E) - length(nms)
         c(chi2, DF, 1 - pchisq(chi2, DF))
     }
     y <- summary.loci(x)

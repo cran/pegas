@@ -1,3 +1,30 @@
+		CHANGES IN PEGAS VERSION 0.4-4
+
+
+NEW FEATURES
+
+    o theta.tree() has a new option, analytical = TRUE, to compute
+      THETA and its standard-error with analytical formulae. If FALSE,
+      a numerical optimisation is done (as in previous versions).
+
+    o The function mst (minimum spanning tree) has been moved from ape
+      to pegas with a new code.
+
+
+BUG FIXES
+
+    o hw.test() should have one less ddl to its chi2 tests (thanks to
+      Gabriel Terraz for the fix).
+
+    o Extracting sequence(s) from an object of class "haplotype" could
+      not be printed correctly: this is fixed with a new '[' method
+      for this class.
+
+    o The reference to Chakraborty and Weiss (1991) was corrected
+      thanks to Kari Vepsäläinen.
+
+
+
 		CHANGES IN PEGAS VERSION 0.4-3
 
 

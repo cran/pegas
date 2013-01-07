@@ -1,11 +1,54 @@
-## haplotype.R (2011-07-11)
+## haplotype.R (2013-01-23)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
-## Copyright 2009-2011 Emmanuel Paradis
+## Copyright 2009-2013 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
+
+mst <- function(d)
+{
+    getIandJ <- function(ij, n) {
+        ## assumes a lower triangle, so i > j
+        ## n must be > 1 (not checked)
+        ## ij must be <= (n - 1)*n/2 (not checked too)
+        j <- 1L
+        N <- n - 1L
+        while (ij > N) {
+            j <- j + 1L
+            N <- N + n - j
+        }
+        i <- n - (N - ij)
+        c(j, i) # return the smaller index first
+    }
+    if (is.matrix(d)) d <- as.dist(d)
+    n <- attr(d, "Size")
+    if (n < 2) stop("less than 2 observations in distance matrix")
+    Nedge <- n - 1L
+    m <- matrix(NA_real_, Nedge, 3)
+    forest <- 1:n
+    o <- order(d)
+    p <- getIandJ(o[1L], n)
+    m[1, ] <- c(p, d[o[1L]])
+    forest[p[2L]] <- forest[p[1L]]
+    i <- j <- 2L
+    while (j <= Nedge) {
+        p <- getIandJ(o[i], n)
+        f1 <- forest[p[1L]]
+        f2 <- forest[p[2L]]
+        if (f2 != f1) {
+            m[j, ] <- c(p, d[o[i]])
+            forest[forest == f2] <- f1
+            j <- j + 1L
+        }
+        i <- i + 1L
+    }
+    colnames(m) <- c("", "", "step")
+    attr(m, "labels") <- attr(d, "Labels")
+    class(m) <- "haploNet"
+    m
+}
 
 .TempletonProb <- function(j, S, b = 2, r = 1)
 {
@@ -382,6 +425,13 @@ print.haplotype <- function(x, ...)
     cat("         Sequence length:", d[2], "\n\n")
     cat("Haplotype labels and frequencies:\n\n")
     print(DF)
+}
+
+"[.haplotype" <- function(x, ...)
+{
+    y <- NextMethod("[")
+    class(y) <- "DNAbin"
+    y
 }
 
 as.network.haploNet <- function(x, directed = FALSE, ...)

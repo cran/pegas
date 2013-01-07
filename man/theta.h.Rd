@@ -36,7 +36,8 @@ theta.h(x, standard.error = FALSE)
 
   Chakraborty, R. and Weiss, K. M. (1991) Genetic variation of the
   mitochondrial DNA genome in American Indians is at mutation-drift
-  equilibrium. \emph{American Journal of Human Genetics}, \bold{86}, 497--506.
+  equilibrium. \emph{American Journal of Physical Anthropology},
+  \bold{86}, 497--506.
 }
 \author{Emmanuel Paradis}
 \seealso{
