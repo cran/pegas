@@ -1,7 +1,6 @@
-0632cc7589c46bbf4981f0a778f1ef2a *COPYING
-3aba7d06288d8b2508e77f9af8492357 *DESCRIPTION
-68a97fe29bb45a897d0cdf47b3541e16 *NAMESPACE
-d1320bb00b5d9bd81eb457257c81c875 *NEWS
+f31049f802c50274f0de3f3c7d1220fc *DESCRIPTION
+fd85fc86d0d0e69282205ab5fafe040a *NAMESPACE
+f3a3d57806ff776765fd48b41af1d283 *NEWS
 8d12795c6c3bdf30bd7541c9182ec7c8 *R/Fst.R
 936fbddd7621f300f3f27e79fa54c4f7 *R/IO.R
 b51cefaa563e993188493b60b7e637a1 *R/MMD.R
@@ -20,13 +19,14 @@ c03500eb87c4d5af0dad3e0c5668b8ea *R/summary.loci.R
 e55b70cad5592e39bdb3a258a4ce86e3 *R/theta.R
 7fe9da73c7744ba7c78c1e9d6c8850fa *Thanks
 ad12dc674e3012ec9d8b003ccb02f404 *inst/CITATION
+042aadb76b523e17093b5833c8fb3fea *inst/doc/ReadingFiles.R
 64f90013a450c3c937b80969033ba6ac *inst/doc/ReadingFiles.Rnw
 e9ebac39a0a2fd93f27cffb75f9dc054 *inst/doc/ReadingFiles.pdf
 d4bf8c31aebcbb4ef42aa8b36efd5722 *man/Fst.Rd
 a80751e18da3ed2cc77e57bba9cba381 *man/MMD.Rd
 361e4413e46da7e8ad9725327725d2f4 *man/R2.test.Rd
 6c45f5d0501897eaf9ed26fdda887f5c *man/amova.Rd
-9724d316a109e16acda52f7eeae41b5c *man/bind.loci.Rd
+b68d5272f35efcb1185c24a242c202bf *man/bind.loci.Rd
 c8ebc862dcbd821226f5cb9b2a0c6186 *man/conversion.Rd
 6bf8595c60f60f41f285d5a60c590179 *man/edit.loci.Rd
 af111b2f399a9bcc00c816051d775e16 *man/haploNet.Rd

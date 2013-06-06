@@ -1,10 +1,30 @@
-exportPattern("^[^\\.]")
+export(amova, as.loci, expand.genotype, Fst, genind2loci, getAlleles,
+       getGenotypes, getPloidy, H, haploNet, haplotype,
+       heterozygosity, hw.test, loci2genind, mst, MMD, nuc.div,
+       R2.test, read.gtx, read.loci, rr.test, site.spectrum,
+       tajima.test, theta.h, theta.k, theta.s, theta.tree, write.loci)
 
 import(ape)
+importFrom(graphics, plot)
+importFrom(utils, edit)
+importFrom(igraph, graph.edgelist)
+importFrom(network, network, "network.vertex.names<-")
 
+S3method(edit, loci)
 S3method(print, loci)
 S3method(summary, loci)
+S3method("[", loci)
+S3method(cbind, loci)
+S3method(rbind, loci)
 S3method(print, summary.loci)
 S3method(plot, summary.loci)
+S3method(print, haplotype)
 S3method(plot, haplotype)
+S3method("[", haplotype)
 S3method(plot, haploNet)
+S3method(print, amova)
+S3method(as.loci, genind)
+S3method(as.loci, data.frame)
+S3method(as.loci,factor)
+S3method(as.loci, character)
+S3method(plot, spectrum)

@@ -40,10 +40,11 @@ str(cbind(b, a))
 ## Unexpected result...
 str(cbind(a, data.frame(z = 10)))
 ## ... bypass the generic:
-str(cbind.loci(a, data.frame(z = 10)))
+str(pegas:::cbind.loci(a, data.frame(z = 10)))
+## ... or much better: a$z <- 10
 ## Here "locicol" is not correct...
-str(cbind.loci(z = 10, a))
+str(pegas:::cbind.loci(z = 10, a))
 ## ... instead
-str(cbind.loci(data.frame(z = 10), a))
+str(pegas:::cbind.loci(data.frame(z = 10), a))
 }
 \keyword{manip}
