@@ -17,7 +17,7 @@ haplotype(x, labels = NULL)
 }
 \arguments{
   \item{x}{a set of DNA sequences (as an object of class
-    \code{"DNAbin"}, or an object of class \code{"haplotype"}.}
+    \code{"DNAbin"}), or an object of class \code{"haplotype"}.}
   \item{labels}{a vector of character strings used as names for the rows
     of the returned object. By default, Roman numerals are given.}
   \item{\dots}{further arguments passed to
@@ -32,8 +32,8 @@ haplotype(x, labels = NULL)
 }
 \author{Emmanuel Paradis}
 \seealso{
-  \code{\link{haploNet}}, \code{\link[ape]{DNAbin}} for manipulation of
-  DNA sequences in R.
+  \code{\link{haploNet}}, \code{\link{haploFreq}},
+  \code{\link[ape]{DNAbin}} for manipulation of DNA sequences in R.
 }
 \examples{
 ## generate some artificial data from 'woodmouse':

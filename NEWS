@@ -1,3 +1,27 @@
+		CHANGES IN PEGAS VERSION 0.5
+
+
+NEW FEATURES
+
+    o The new function theta.msat computes THETA from micro-satellite
+      data using three different estimators.
+
+    o The new function haploFreq extracts the haplotype frequencies,
+      possibly using the labels of the original sequences; see
+      ?haploFreq for details.
+
+    o plot.haploNet() has the new option 'show.mutation' to display
+      the mutations on the links of the network.
+
+
+OTHER CHANGES
+
+    o Improved DESCRIPTION and NAMESPACE files.
+
+    o The packages igraph and network are no more required.
+
+
+
 		CHANGES IN PEGAS VERSION 0.4-5
 
 

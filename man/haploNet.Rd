@@ -13,7 +13,7 @@ haploNet(h, d = NULL)
 \method{plot}{haploNet}(x, size = 1, col = "black", bg = "white",
      col.link = "black", lwd = 1, lty = 1, pie = NULL,
      labels = TRUE, font = 2, cex = 1, scale.ratio = 1,
-     asp = 1, legend = FALSE, fast = FALSE, ...)
+     asp = 1, legend = FALSE, fast = FALSE, show.mutation = TRUE, ...)
 \method{as.network}{haploNet}(x, directed = FALSE, ...)
 \method{as.igraph}{haploNet}(x, directed = FALSE, use.labels = TRUE, ...)
 }
@@ -52,6 +52,8 @@ haploNet(h, d = NULL)
     to click where to draw the legend.}
   \item{fast}{a logical specifying whether to optimize the spacing of
     the circles; \code{FALSE} by default.}
+  \item{show.mutation}{a logical specifying whether to display the
+    mutations on the links of the network.}
   \item{directed}{a logical specifying whether the network is directed
     (\code{FALSE} by default).}
   \item{use.labels}{a logical specifying whether to use the original
@@ -79,7 +81,7 @@ haploNet(h, d = NULL)
   \code{as.network} and \code{as.igraph} return objects of the
   appropriate class.
 }
-\author{Emmanuel Paradis}
+\author{Emmanuel Paradis, Klaus Schliep}
 \references{
   Templeton, A. R., Crandall, K. A. and Sing, C. F. (1992) A cladistic
   analysis of phenotypic association with haplotypes inferred from
@@ -87,7 +89,7 @@ haploNet(h, d = NULL)
   estimation. \emph{Genetics}, \bold{132}, 619--635.
 }
 \seealso{
-  \code{\link{haplotype}}, \code{\link{mst}}
+  \code{\link{haplotype}}, \code{\link{haploFreq}}, \code{\link{mst}}
 }
 \examples{
 ## generate some artificial data from 'woodmouse':

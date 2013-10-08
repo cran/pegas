@@ -1,5 +1,4 @@
 \name{theta.tree}
-\Rdversion{1.1}
 \alias{theta.tree}
 \title{
   Population Parameter THETA Using Genealogy
@@ -59,9 +58,7 @@ theta.tree(phy, theta, fixed = FALSE, analytical = TRUE, log = TRUE)
   Wakeley, J. (2009) \emph{Coalescent Theory: An Introduction.}
   Greenwood Village, CO: Roberts and Company Publishers.
 }
-\author{
-  Emmanuel Paradis
-}
+\author{Emmanuel Paradis}
 \seealso{
   \code{\link{theta.h}}, \code{\link{theta.s}}, \code{\link{theta.k}}
 }

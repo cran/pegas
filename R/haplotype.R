@@ -1,8 +1,8 @@
-## haplotype.R (2013-01-23)
+## haplotype.R (2013-09-18)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
-## Copyright 2009-2013 Emmanuel Paradis
+## Copyright 2009-2013 Emmanuel Paradis, 2013 Klaus Schliep
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
@@ -107,6 +107,28 @@ haplotype <- function(x, labels = NULL)
     obj
 }
 
+haploFreq <- function(x, fac, split = "_", what = 2, haplo = NULL)
+{
+    if (missing(fac)) {
+        fac <- strsplit(rownames(x), split)
+        fac <- factor(sapply(fac, function(xx) xx[what]))
+    } else if (length(fac) != nrow(x))
+        stop("number of elements in 'fac' not the same than number of sequences")
+
+    if (is.null(haplo)) haplo <- haplotype(x)
+    h.index <- attr(haplo, "index")
+    l <- nlevels(fac)
+    if (l == 1) {
+        res <- sapply(h.index, length)
+        dim(res) <- c(length(res), 1L)
+    } else {
+        res <- sapply(h.index, function(xx) tabulate(fac[xx], l))
+        res <- t(res)
+    }
+    colnames(res) <- levels(fac)
+    res
+}
+
 haploNet <- function(h, d = NULL)
 {
     if (!inherits(h, "haplotype"))
@@ -149,7 +171,7 @@ plot.haploNet <-
     function(x, size = 1, col = "black", bg = "white",
              col.link = "black", lwd = 1, lty = 1, pie = NULL,
              labels = TRUE, font = 2, cex = 1, scale.ratio = 1,
-             asp = 1, legend = FALSE, fast = FALSE, ...)
+             asp = 1, legend = FALSE, fast = FALSE, show.mutation = TRUE, ...)
 {
     par(xpd = TRUE)
     link <- x[, 1:2]
@@ -372,6 +394,20 @@ if (!fast) {
          axes = FALSE, bty = "n", asp = asp, ...)
     segments(xx[l1], yy[l1], xx[l2], yy[l2], lwd = lwd,
              lty = lty, col = col.link)
+
+    ## from Klaus:
+    if (show.mutation) {
+        ld1 <- x[, 3]
+        ld2 <- x[, 3] * scale.ratio
+        for (i in seq_along(ld1)) {
+            pc <- ((1:ld1[i]) / (ld1[i] + 1) * ld2[i] + size[l1[i]]/2) / (ld2[i] + (size[l1[i]] + size[l2[i]])/2)
+            xr <- pc * (xx[l2[i]] - xx[l1[i]]) +  xx[l1[i]]
+            yr <- pc * (yy[l2[i]] - yy[l1[i]]) +  yy[l1[i]]
+            symbols(xr, yr, circles = rep(lwd/15, length(xr)), inches = FALSE, add = TRUE,
+                    fg = col.link, bg = col.link)
+        }
+    }
+
     if (is.null(pie))
         symbols(xx, yy, circles = size/2, inches = FALSE,
                 add = TRUE, fg = col, bg = bg)
@@ -434,6 +470,7 @@ print.haplotype <- function(x, ...)
     y
 }
 
+if (getRversion() >= "2.15.1") utils::globalVariables(c("network", "network.vertex.names<-"))
 as.network.haploNet <- function(x, directed = FALSE, ...)
 {
     res <- network(x[, 1:2], directed = directed, ...)
@@ -441,6 +478,7 @@ as.network.haploNet <- function(x, directed = FALSE, ...)
     res
 }
 
+if (getRversion() >= "2.15.1") utils::globalVariables("graph.edgelist")
 as.igraph.haploNet <- function(x, directed = FALSE, use.labels = TRUE, ...)
 {
     directed <- directed

@@ -1,4 +1,4 @@
-## theta.R (2012-09-26)
+## theta.R (2013-09-20)
 
 ##   Population Parameter THETA
 
@@ -6,8 +6,9 @@
 ## theta.k: using expected number of alleles
 ## theta.s: using segregating sites in DNA sequences
 ## theta.tree: using a genealogy
+## theta.msat: using micro-satellites
 
-## Copyright 2002-2012 Emmanuel Paradis
+## Copyright 2002-2013 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../COPYING for licensing issues.
@@ -94,5 +95,25 @@ theta.tree <-
 ###            logLik = -out$value)
 ### I prefered nlminb() because it is slightly faster and in most cases
 ### the hessian-based estimate of SE(theta) are not needed
+    res
+}
+
+theta.msat <- function(x)
+{
+    s <- summary(x)
+    getThetas <- function(x) {
+        wi <- x$allele
+        n <- sum(wi) # number of alleles
+        ai <- as.numeric(names(x$allele))
+        abar <- weighted.mean(ai, wi)
+        fi <- wi/n
+        H0 <- (n * sum(fi^2) - 1) / (n - 1)
+        xbar <- mean(fi)
+        c(2 * sum(wi * (ai - abar)^2)/(n - 1), # theta_va
+          0.5 * (1/H0^2 - 1), # theta_h
+          1/(8 * xbar^2) - .5) # theta_xbar
+    }
+    res <- t(sapply(s, getThetas))
+    colnames(res) <- c("theta.v", "theta.h", "theta.x")
     res
 }

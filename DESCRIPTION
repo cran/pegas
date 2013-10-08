@@ -1,19 +1,24 @@
 Package: pegas
-Version: 0.4-5
-Date: 2013-06-06
+Version: 0.5
+Date: 2013-10-08
 Title: Population and Evolutionary Genetics Analysis System
-Author: Emmanuel Paradis, Alastair Potts
-Maintainer: Emmanuel Paradis <Emmanuel.Paradis@ird.fr>
+Authors@R: c(person("Emmanuel", "Paradis", role = c("aut", "cre", "cph"), email = "Emmanuel.Paradis@ird.fr"),
+  person("Klaus", "Schliep", role = "aut"),
+  person("Alastair", "Potts", role = "aut"))
 Depends: R (>= 2.6.0), ape (>= 2.4), adegenet
-Imports: igraph, network
+Imports: graphics, utils
 ZipData: no
 Description: pegas provides functions for reading, writing, plotting,
-        analysing, and manipulating allelic and haplotypic data, and
-        for the analysis of population nucleotide sequences including
-        coalescence analyses.
+  analysing, and manipulating allelic and haplotypic data, and for the
+  analysis of population nucleotide sequences and micro-satellites including
+  coalescence analyses.
 License: GPL (>= 2)
-URL: http://ape.mpl.ird.fr/pegas/
-Packaged: 2013-06-06 12:24:16 UTC; paradis
+URL: http://ape-package.ird.fr/pegas/
+Packaged: 2013-10-08 03:15:58 UTC; paradis
+Author: Emmanuel Paradis [aut, cre, cph],
+  Klaus Schliep [aut],
+  Alastair Potts [aut]
+Maintainer: Emmanuel Paradis <Emmanuel.Paradis@ird.fr>
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2013-06-06 17:04:31
+Date/Publication: 2013-10-08 08:18:22
