@@ -1,3 +1,22 @@
+		CHANGES IN PEGAS VERSION 0.5-1
+
+
+NEW FEATURES
+
+    o MMD() now plots the expected distribution of mismatches under
+      the assumption of a stable population together with the
+      empirical curve (contribution by David Winter). The new option
+      'lty' can specify the types of lines. The legend is now at the
+      top of the plot.
+
+
+BUG FIXES
+
+    o theta.tree() returned estimates of Theta divided by 2 (scaled on
+      Nu). The estimates are now correct (ie, scaled on 2Nu).
+
+
+
 		CHANGES IN PEGAS VERSION 0.5
 
 

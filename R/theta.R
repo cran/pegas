@@ -1,4 +1,4 @@
-## theta.R (2013-09-20)
+## theta.R (2013-12-03)
 
 ##   Population Parameter THETA
 
@@ -67,7 +67,7 @@ theta.tree <-
     k <- 2:length(phy$tip.label)
     K <- length(k)
     tmp <- choose(k, 2)
-    tmp2 <- sum(x * tmp)
+    tmp2 <- 2 * sum(x * tmp)
     sltmp <- sum(log(tmp))
     if (fixed) {
         res <- sltmp - K * log(theta) - tmp2/theta
@@ -75,7 +75,7 @@ theta.tree <-
     } else {
         if (analytical) {
             theta <- tmp2/K
-            se <- sqrt(-1/(K/theta^2 - 2*tmp2/theta^3))
+            se <- sqrt(-1/(K/theta^2 - 2 * tmp2/theta^3))
             logLik <- sltmp - K * log(theta) - tmp2/theta
             res <- list(theta = theta, se = se, logLik = logLik)
         } else {

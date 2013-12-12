@@ -6,9 +6,8 @@
   distances from a set of DNA sequences.
 }
 \usage{
-MMD(x, xlab = "Distance", main = "", rug = TRUE,
-    legend = TRUE, lcol = "blue", ...)
-
+MMD(x, xlab = "Distance", main = "", rug = TRUE, legend = TRUE,
+    lcol = c("blue", "red"), lty = c(1, 1), ...)
 }
 \arguments{
   \item{x}{a set of DNA sequences (object of class \code{"DNAbin"}).}
@@ -17,16 +16,17 @@ MMD(x, xlab = "Distance", main = "", rug = TRUE,
   \item{rug}{a logical specifying whether to add a rug of the pairwise
     distances on the horizontal axis (see \code{\link[graphics]{rug}}).}
   \item{legend}{a logical specifying whether to draw a legend.}
-  \item{lcol}{the colour used for the empirical density curve.}
+  \item{lcol}{the colours used for the curves.}
+  \item{lty}{the line types for the curves}
   \item{\dots}{further arguments passed to \code{hist}.}
 }
 \details{
-  Currently only the observed distribution of pairwise distances are
-  plotted, as well as an empirical density estimate. Rogers and
-  Harpending (1992) give formulae to compute the expected curves under
-  some demographic models.
+  The histogram shows the observed distribution of pairwise
+  distances. The lines show an empirical density estimate (in blue) and
+  the expected distribution under stable population population (Rogers
+  and Harpending 1992).
 }
-\author{Emmanuel Paradis}
+\author{Emmanuel Paradis and David Winter}
 \references{
   Rogers, A. R. and Harpending, H. (1992) Population growth makes waves
   in the distribution of pairwise genetic-differences. \emph{Molecular
@@ -36,5 +36,6 @@ MMD(x, xlab = "Distance", main = "", rug = TRUE,
 data(woodmouse)
 MMD(woodmouse, col = "grey")
 MMD(woodmouse, breaks = 20, legend = FALSE)
+MMD(woodmouse, lty = 1:2, lcol = rep("black", 2), col = "lightgrey")
 }
 \keyword{hplot}

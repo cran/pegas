@@ -1,10 +1,11 @@
 Package: pegas
-Version: 0.5
-Date: 2013-10-08
+Version: 0.5-1
+Date: 2013-12-12
 Title: Population and Evolutionary Genetics Analysis System
 Authors@R: c(person("Emmanuel", "Paradis", role = c("aut", "cre", "cph"), email = "Emmanuel.Paradis@ird.fr"),
-  person("Klaus", "Schliep", role = "aut"),
-  person("Alastair", "Potts", role = "aut"))
+  person("Klaus", "Schliep", role = c("aut", "cph")),
+  person("Alastair", "Potts", role = c("aut", "cph")),
+  person("David", "Winter", role = c("aut", "cph")))
 Depends: R (>= 2.6.0), ape (>= 2.4), adegenet
 Imports: graphics, utils
 ZipData: no
@@ -14,11 +15,12 @@ Description: pegas provides functions for reading, writing, plotting,
   coalescence analyses.
 License: GPL (>= 2)
 URL: http://ape-package.ird.fr/pegas/
-Packaged: 2013-10-08 03:15:58 UTC; paradis
+Packaged: 2014-01-10 16:34:41 UTC; paradis
 Author: Emmanuel Paradis [aut, cre, cph],
-  Klaus Schliep [aut],
-  Alastair Potts [aut]
+  Klaus Schliep [aut, cph],
+  Alastair Potts [aut, cph],
+  David Winter [aut, cph]
 Maintainer: Emmanuel Paradis <Emmanuel.Paradis@ird.fr>
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2013-10-08 08:18:22
+Date/Publication: 2014-01-10 17:58:40
