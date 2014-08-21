@@ -11,7 +11,7 @@
 ## Copyright 2002-2013 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 theta.h <- function(x, standard.error = FALSE)
 {

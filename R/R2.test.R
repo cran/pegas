@@ -5,7 +5,7 @@
 ## Copyright 2009 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 R2.test <- function(x, B = 1000, theta = 1, plot = TRUE, quiet = FALSE, ...)
 {

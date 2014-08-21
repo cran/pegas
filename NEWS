@@ -1,3 +1,67 @@
+		CHANGES IN PEGAS VERSION 0.6
+
+
+NEW FEATURES
+
+    o The new function read.vcf reads VCF files.
+
+    o The new function is.snp tests whether a locus is a SNP.
+
+    o The new function is.phased tests whether a genotype is phased.
+
+    o The new function proba.genotype computes expected genotype
+      probabilities under Hardy-Weinberg equilibrium for all levels
+      of ploidy and any number of alleles.
+
+    o The new function haplotype.loci extracts haplotypes from phased
+      genotypic data.
+
+    o The new function dist.haplotype.loci computes distances among
+      haplotypes extracted from loci data.
+
+    o Two new functions, LD and LD2, test for linkage disequilibrium
+      with phased and unphased genotypes, respectively.
+
+    o haplotype() is now generic with methods for "DNAbin" and "loci"
+      objects.
+
+    o There is a sort() method for objects of class "haplotype".
+
+    o expand.genotype() now works with all levels of ploidy and any
+      number of alleles.
+
+
+BUG FIXES
+
+    o site.spectrum( , folded = FALSE) dit not work correctly.
+
+    o Genotypes with alleles not separated by the default slash (e.g.,
+      a|A) were not read correctly.
+
+    o Reordering of alleles has been improved: alleles are now always
+      sorted alphabetically within an unphased genotype, e.g., a/A is
+      changed to A/a even if A/a was not observed (this was not the
+      case before).
+
+    o hw.test() now checks more carefully for ploidy level and accepts
+      data with mixed levels of ploidy.
+
+
+OTHER CHANGES
+
+    o amova() now checks that the term(s) in the rhs of the formula is
+      (are) factor(s).
+
+    o Plotting haplotype networks with pies can now be done with
+      user-chosen colours for the slices (thanks to Marius Wenzel for
+      pointing this out).
+
+    o tajima.test() now returns a warning with less than 4
+      observations as this test cannot be done in this situation (an
+      error occured before).
+
+
+
 		CHANGES IN PEGAS VERSION 0.5-1
 
 

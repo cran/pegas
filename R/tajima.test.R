@@ -1,15 +1,19 @@
-## tajima.test.R (2009-05-10)
+## tajima.test.R (2014-06-26)
 
 ##   Test of the Neutral Mutation Hypothesis
 
-## Copyright 2009 Emmanuel Paradis
+## Copyright 2009-2014 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 tajima.test <- function(x)
 {
     n <- if (is.list(x)) length(x) else dim(x)[1]
+    if (n < 4) {
+        warning("Tajima test requires at least 4 sequences")
+        return(list(D = NaN, Pval.normal = NaN, Pval.beta = NaN))
+    }
     khat <- mean(dist.dna(x, "N"))
     S <- length(seg.sites(x))
     if (!S) {

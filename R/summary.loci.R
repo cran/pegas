@@ -1,22 +1,35 @@
-## summary.loci.R (2012-07-31)
+## summary.loci.R (2014-07-03)
 
 ##   Print and Summaries of Loci Objects
 
-## Copyright 2009-2012 Emmanuel Paradis
+## Copyright 2009-2014 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
-getPloidy <- function(x)
-    unlist(lapply(x[, attr(x, "locicol"), drop = FALSE],
-                  function(x) sum(charToRaw(levels(x)[1]) == 47) + 1))
+getPloidy <- function(x) {
+    foo <- function(x) sum(charToRaw(levels(x)[1]) %in% as.raw(c(47, 124))) + 1L
+    unlist(lapply(x[, attr(x, "locicol"), drop = FALSE], foo))
+}
 
 getAlleles <- function(x)
     lapply(x[, attr(x, "locicol"), drop = FALSE],
-           function(x) unique(unlist(strsplit(levels(x), "/"))))
+           function(x) unique(unlist(strsplit(levels(x), "[/|]"))))
 
 getGenotypes <- function(x)
     lapply(x[, attr(x, "locicol"), drop = FALSE], levels)
+
+is.phased <- function(x)
+{
+    foo <- function(x) {
+        phased <- grep("/", levels(x), invert = TRUE)
+        if (length(phased) == 0) return(logical(length(x)))
+        as.integer(x) %in% phased
+    }
+    sapply(x[, attr(x, "locicol")], foo)
+}
+
+is.snp <- function(x) sapply(lapply(getAlleles(x), nchar), sum) == 2
 
 print.loci <- function(x, details = FALSE, ...)
 {
@@ -24,14 +37,15 @@ print.loci <- function(x, details = FALSE, ...)
         n <- dim(x)
         nloci <- length(attr(x, "locicol"))
         cat("Allelic data frame:", n[1])
-        if (n[1] == 1) cat(" individual\n") else cat(" individuals\n")
-        cat("                   ", nloci)
+        cat(" individual")
+        if (n[1] > 1) cat("s")
+        cat("\n                   ", nloci)
         if (nloci == 1) cat(" locus\n") else cat(" loci\n")
         nav <- n[2] - nloci
         if (nav) {
-            cat("                   ", nav)
-            if (nav == 1) cat(" additional variable\n")
-            else cat(" additional variables\n")
+            cat("                   ", nav, "additional variable")
+            if (nav > 1) cat("s")
+            cat("\n")
         }
     }
 }
@@ -44,7 +58,7 @@ summary.loci <- function(object, ...)
     ii <- 1L
     for (i in L) {
         geno <- levels(object[, i])
-        alle <- strsplit(geno, "/")
+        alle <- strsplit(geno, "[/|]")
         unialle <- sort(unique(unlist(alle)))
         l <- tabulate(object[, i], length(geno))
         names(l) <- geno

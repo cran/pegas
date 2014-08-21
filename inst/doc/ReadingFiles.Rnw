@@ -13,6 +13,7 @@
 \newcommand{\pegas}{\pkg{pegas}}
 \newcommand{\adegenet}{\pkg{adegenet}}
 \newcommand{\gdata}{\pkg{gdata}}
+\newcommand{\poppr}{\pkg{poppr}}
 
 \newcommand{\genetix}{\textsc{Genetix}}
 \newcommand{\fstat}{\textsc{Fstat}}
@@ -28,7 +29,7 @@
 
 <<echo=false,quiet=true>>=
 options(width=60)
-@ 
+@
 
 \adegenet\ \cite{Jombart2008} and \pegas\ \cite{Paradis2010} are two
 packages that complement each other for population genetic analyses in
@@ -40,6 +41,7 @@ population genetics. The following formats are considered:
 
 \begin{itemize}
 \item Text (ASCII) in tabular form,
+\item VCF files,
 \item \fstat\ data format,
 \item \genetix\ data format,
 \item \genepop\ data format,
@@ -68,8 +70,14 @@ where the different levels are the observed genotypes with the alleles
 separated with a forward slash, for instance, `A/A' for a classical
 genotype, or `132/148' for a microsatellite locus. This is an S3
 class.\footnote{For details:
-  ape.mpl.ird.fr/pegas/DefinitionDataClassesPegas.pdf.}
+  ape-package.ird.fr/pegas/DefinitionDataClassesPegas.pdf.}
 Some examples are given in the next subsection.
+
+With version 0.6, \pegas\ supports phased and unphased genotypes (A|A
+and A/A, respectively). In unphased genotypes, the alleles are sorted
+with uppercase first, and then in alphabetical order, so that a/A is
+changed into A/a (even if the latter was not observed in the original
+data file).
 
 There is no need to choose between these two data structures: they
 are used by each package and they can be converted between each other
@@ -119,17 +127,20 @@ Then this file would be read with:
 y <- read.loci("titi", header = FALSE, allele.sep = "-")
 print(y, details = TRUE)
 identical(x, y)
-@ 
+@
 
 Let us have a look on the different options of \code{read.loci}:
 
 <<>>=
 args(read.loci)
 @ 
-We already know \code{file}, \code{header}, and
-\code{allele.sep}. \code{loci.sep} is the separator of the columns
+We already know \code{file}, \code{header}, and \code{allele.sep}.
+Note the default value for this last option which specifies that the
+allele separator can be either a slash or a vertical bar.
+\code{loci.sep} is the separator of the columns
 (not only the loci) which is one or several spaces by default (use
-\code{"\textbackslash t"} if a tabulation). \code{col.pop} must an
+\code{sep = "\textbackslash t"} if a tabulation). \code{col.pop} must
+be an
 integer giving the index of the column that will be labelled
 ``population'' in the returned data; by default there is
 none. \code{col.loci} does the same for the loci; by default all
@@ -139,8 +150,7 @@ columns are treated as loci except if \code{col.pop} is used. Finally
 top of the file).
 
 Any level of ploidy is accepted and \pegas\ checks the order of the
-alleles so that the returned genotypes have unordered alleles. For
-instance the file `tutu' is:
+alleles (see above). For instance the file `tutu' is:
 
 \color{blue}
 \begin{verbatim}
@@ -151,7 +161,26 @@ A/a/a
 
 <<>>=
 print(read.loci("tutu", FALSE), TRUE)
-@ 
+@
+
+Phased and unphased genotypes can be mixed in a file. For instance the
+file `tyty' is:
+
+\color{blue}
+\begin{verbatim}
+Loc1
+A/a
+a/A
+A|a
+a|A
+\end{verbatim}
+\color{black}
+
+<<>>=
+X <- read.loci("tyty")
+print(X, TRUE)
+summary(X)
+@
 
 A more realistic example with four columns---an allozyme locus, a
 microsat locus, a population assignment, and a phenotypic
@@ -169,7 +198,7 @@ IndB2   a/a     120/120 B       2.8
 which will be read with:
 
 <<>>=
-z <- read.loci("tata", loci.sep = "\t", col.loci = 1:2, col.pop = 3, row.names = 1)
+z <- read.loci("tata", loci.sep = "\t", col.loci = 2:3, col.pop = 4, row.names = 1)
 z
 print(z, details = TRUE)
 @ 
@@ -191,7 +220,32 @@ additional variables are treated as they should be:
 
 <<>>=
 str(z)
+@
+
+\subsection{Reading VCF Files}
+
+Starting with version 0.6, \pegas\ can read VCF files with the
+function \code{read.vcf}.
+
+<<>>=
+args(read.vcf)
 @ 
+Because VCF files can be very large, only 1000 loci are read. The option
+\code{skip} specifies how many loci to skip before reading the data,
+so that a file can be read and/or analysed in successive steps.
+
+\code{read.vcf} returns an object of class \code{"loci"} with the
+following additional attributes:
+
+\begin{description}
+\item[\texttt{CHR}:] the chromosome number (integer values);
+\item[\texttt{POS}:] the position of the locus (numeric values);
+\item[\texttt{QUAL}:] the quality of the inferred locus (integer values);
+\item[\texttt{FILTER}:] the filter (characters).
+\end{description}
+
+VCF files contain a lot more information (genotype likelihoods, \dots)
+which are (currently) not read by \code{read.vcf}.
 
 \subsection{Importing \fstat, \genetix, \genepop, and \struc\ Data Files}
 
@@ -221,7 +275,7 @@ file.copy(system.file("files/nancycats.dat", package = "adegenet"), getwd())
 file.copy(system.file("files/nancycats.gtx", package = "adegenet"), getwd())
 file.copy(system.file("files/nancycats.gen", package = "adegenet"), getwd())
 file.copy(system.file("files/nancycats.str", package = "adegenet"), getwd())
-@ 
+@
 
 \adegenet\ provides four functions to read these formats. Reading the
 first three formats is straightforward:
@@ -230,7 +284,7 @@ first three formats is straightforward:
 A <- read.fstat("nancycats.dat", quiet = TRUE)
 B <- read.genetix("nancycats.gtx", quiet = TRUE)
 C <- read.genepop("nancycats.gen", quiet = TRUE)
-@ 
+@
 
 Reading a \struc\ file is slightly more complicated because the
 function needs some exta information. This can be done interactively
@@ -239,14 +293,14 @@ we will use \code{ask = FALSE}:
 
 <<>>=
 D <- read.structure("nancycats.str", onerowperind=FALSE, n.ind=237, n.loc=9, col.lab=1, col.pop=2, ask=FALSE, quiet=TRUE)
-@ 
+@
 
 All four data sets are identical (we only compare the \code{tab} slots):
 
 <<>>=
 identical(A@tab, C@tab)
 identical(B@tab, D@tab)
-@ 
+@
 
 Once the data have been read into R, they can be analysed with
 \adegenet\ or with \pegas\ after eventually converting them with
@@ -254,7 +308,7 @@ Once the data have been read into R, they can be analysed with
 
 <<>>=
 unlink(c("nancycats.dat", "nancycats.gtx", "nancycats.gen", "nancycats.str"))
-@ 
+@
 
 Finally, \pegas\ has the function \code{read.gtx} to read a \genetix\
 data file and return an object of class \loci. This function has no option.
@@ -309,6 +363,11 @@ in Section \ref{sec:tab}, so the objective is to have them in R as a
   size Excel files but can be very slow with bigger files ($>$ 10 MB).
 \end{enumerate}
 
+We also note the function \code{read.genealex} in the package \poppr\
+\cite{Kamvar2014} which reads a Genalex file that has been exported
+into csv format and returns an object class \code{"genind"}.
+
+
 \section{Editing and Writing Genetic Data Files}
 
 After the data have been read into R, they can be manipulated in the
@@ -358,7 +417,7 @@ in R's spreadsheet-like data editor. Here are a few points about this procedure:
   character vectors.
 \item Like most R functions, \code{edit} returns its results in the
   console if no assignment has been done, so you may prefer to call
-  the editor with \code{x~<-~edit(x)} or \code{fix(x)}.
+  the editor with \code{x <- edit(x)} or \code{fix(x)}.
 
   If you forgot the assignment and don't want to lose all the
   changes you did, after you have closed the editor you can save the

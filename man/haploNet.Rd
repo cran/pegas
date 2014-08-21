@@ -26,8 +26,9 @@ haploNet(h, d = NULL)
     and eventually recycled.}
   \item{col}{a character vector specifying the colours of the circles;
     eventually recycled.}
-  \item{bg}{a character vector specifying the colours of the background
-    of the circles; eventually recycled.}
+  \item{bg}{a character vector specifying either the colours of the
+    background of the circles (if \code{pie = NULL}), or the colours of
+    the slices of the pies; eventually recycled.}
   \item{col.link}{a character vector specifying the colours of the links;
     eventually recycled.}
   \item{lwd}{a numeric vector giving the width of the links; eventually

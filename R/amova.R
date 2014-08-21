@@ -1,11 +1,11 @@
-## amova.R (2012-05-07)
+## amova.R (2014-08-21)
 
 ##   Analysis of Molecular Variance
 
-## Copyright 2010-2012 Emmanuel Paradis
+## Copyright 2010-2014 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
 {
@@ -15,7 +15,18 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
     ## keep the highest level first:
     if (length(rhs) > 1) gr.nms <- unlist(strsplit(gr.nms, "/"))
 
+    if (any(sapply(gr.nms, function(x) ! is.factor(eval(parse(text = x)))))) {
+        ## <FIXME>
+        ## a warning instead of an error so that StAMMP on CRAN does not
+        ## fail. I wrote to Pemberton but got no reply (2014-08-21)
+        warning("elements in the rhs of the formula are not all factors")
+        ## stop("all elements in the rhs of the formula must be factors")
+        ## </FIXME>
+    }
+
     y <- get(y.nms)
+    if (any(is.na(y)))
+        warning("at least one missing value in the distance object.")
     if (!is.squared) y <- y^2 # square the distances
     if (class(y) == "dist") y <- as.matrix(y)
     if (!is.matrix(y))

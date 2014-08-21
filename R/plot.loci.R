@@ -5,7 +5,7 @@
 ## Copyright 2009 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 plot.summary.loci <-
     function(x, loci, what = "both", layout = 1, col = c("blue", "red"), ...)

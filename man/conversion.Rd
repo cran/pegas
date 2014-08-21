@@ -14,10 +14,10 @@
 as.loci(x, ...)
 \method{as.loci}{genind}(x, ...)
 genind2loci(x)
-\method{as.loci}{data.frame}(x, allele.sep = "/", col.pop = NULL, col.loci = NULL, ...)
+\method{as.loci}{data.frame}(x, allele.sep = "/|", col.pop = NULL, col.loci = NULL, ...)
 loci2genind(x)
-\method{as.loci}{factor}(x, allele.sep = "/", ...)
-\method{as.loci}{character}(x, allele.sep = "/", ...)
+\method{as.loci}{factor}(x, allele.sep = "/|", ...)
+\method{as.loci}{character}(x, allele.sep = "/|", ...)
 }
 \arguments{
   \item{x}{an object of class \code{"loci"} or \code{"genind"}, a data

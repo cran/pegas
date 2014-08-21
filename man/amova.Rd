@@ -38,6 +38,17 @@ amova(formula, data = NULL, nperm = 1000, is.squared = FALSE)
 \note{
   If there are more than three levels, approximate formulae are used to
   estimate the variance components.
+
+  If there is an error message like this:
+
+  \code{Error in FUN(X[[1L]], ...) : 'bin' must be numeric or a factor}
+
+  it may be that the factors you use in the formula were not read
+  correctly. You may convert them with the function \code{factor}, or,
+  before reading your data files, do this command (in case this option
+  was modified):
+
+  \code{options(stringsAsFactors = TRUE)}
 }
 \value{
   An object of class \code{"amova"} which is a list with a table of sums

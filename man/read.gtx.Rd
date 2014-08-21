@@ -29,7 +29,7 @@ read.gtx(file)
 }
 \seealso{
   \code{\link{read.loci}}, \code{\link{write.loci}},
-  \code{\link[adegenet]{read.genetix}}
+  \code{\link{read.vcf}}, \code{\link[adegenet]{read.genetix}}
 }
 \examples{
 require(adegenet)

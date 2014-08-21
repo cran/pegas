@@ -5,7 +5,7 @@
 ## Copyright 2009-2012 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 nuc.div <- function(x, variance = FALSE, pairwise.deletion = FALSE)
 {

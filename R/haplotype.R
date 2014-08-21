@@ -1,11 +1,11 @@
-## haplotype.R (2013-09-18)
+## haplotype.R (2014-07-27)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
-## Copyright 2009-2013 Emmanuel Paradis, 2013 Klaus Schliep
+## Copyright 2009-2014 Emmanuel Paradis, 2013 Klaus Schliep
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 mst <- function(d)
 {
@@ -71,7 +71,9 @@ mst <- function(d)
     cumprod(P)[j]
 }
 
-haplotype <- function(x, labels = NULL)
+haplotype <- function(x, ...) UseMethod("haplotype")
+
+haplotype.DNAbin <- function(x, labels = NULL, ...)
 {
     nms.x <- deparse(substitute(x))
     if (is.list(x)) x <- as.matrix(x)
@@ -178,7 +180,6 @@ plot.haploNet <-
     l1 <- x[, 1]
     l2 <- x[, 2]
     ld <- x[, 3] * scale.ratio
-#    ld[] <- 1
 
     tab <- tabulate(link)
     n <- length(tab)
@@ -231,7 +232,7 @@ if (!fast) {
     }
 
     ## Version qui ne prend pas en compte les angles
-    ## dans le calcul de l'énergie du réseau: cela semble
+    ## dans le calcul de l'energie du reseau: cela semble
     ## mieux marcher mais il y a encore des line-crossings
 
     energy <- function(xx, yy) {
@@ -412,8 +413,10 @@ if (!fast) {
         symbols(xx, yy, circles = size/2, inches = FALSE,
                 add = TRUE, fg = col, bg = bg)
     else {
+        nc <- ncol(pie)
+        co <- if (length(bg) == 1 && bg == "white") rainbow(nc) else rep(bg, length.out = nc)
         for (i in 1:n)
-            floating.pie.asp(xx[i], yy[i], pie[i, ], radius = size[i]/2)
+            floating.pie.asp(xx[i], yy[i], pie[i, ], radius = size[i]/2, col = co)
     }
     if (labels)
         text(xx, yy, attr(x, "labels"), font = font, cex = cex)
@@ -431,24 +434,38 @@ if (!fast) {
             text(xy[1] + 0.5, xy[2] - 2*vspace, "  1", adj = 0)
         }
         if (!is.null(pie)) {
-            nc <- ncol(pie)
-            co <- rainbow(nc)
             TEXT <- paste(" ", colnames(pie))
             for (i in 1:nc) {
-                Y <- xy[2] - 2*(i+1)*vspace
+                Y <- xy[2] - 2 * (i + 1) * vspace
                 symbols(xy[1] + 0.5, Y, circles = 0.5,
-                    inches = FALSE, add = TRUE, bg = co[i])
+                        inches = FALSE, add = TRUE, bg = co[i])
                 text(xy[1] + 0.5, Y, TEXT[i], adj = 0)
             }
         }
     }
-    #browser()
 }
 
 plot.haplotype <- function(x, ...)
 {
     barplot(sapply(attr(x, "index"), length), xlab = "Haplotype",
             ylab = "Number", names.arg = rownames(x), ...)
+}
+
+sort.haplotype <-
+    function(x, decreasing = ifelse(what == "frequencies", TRUE, FALSE), what = "frequencies", ...)
+{
+    oc <- oldClass(x)
+    from <- attr(x, "from")
+    what <- match.arg(what, c("frequencies", "labels"))
+    idx <- attr(x, "index")
+    o <- switch(what,
+                frequencies = order(sapply(idx, length), decreasing = decreasing),
+                labels = order(rownames(x), decreasing = decreasing))
+    x <- x[o, ]
+    attr(x, "index") <- idx[o]
+    class(x) <- oc
+    attr(x, "from") <- from
+    x
 }
 
 print.haplotype <- function(x, ...)
@@ -487,4 +504,222 @@ as.igraph.haploNet <- function(x, directed = FALSE, use.labels = TRUE, ...)
         if (use.labels) matrix(attr(x, "labels")[y], ncol = 2)
         else y - 1L
     graph.edgelist(y, directed = directed, ...)
+}
+
+haplotype.loci <- function(x, locus = 1:2, ...)
+{
+    x <- x[, attr(x, "locicol")[locus]]
+    nloc <- ncol(x)
+
+    ## drop the rows with at least one unphased genotype:
+    s <- apply(is.phased(x), 1, all)
+    n <- nrow(x)
+    if (any(!s)) {
+        x <- x[s, ]
+        warning(paste0("dropping ", sum(!s), " observations out of ", n, " due to unphased genotype(s)"))
+        n <- nrow(x)
+    }
+
+### NOTE: trying to find identical rows first does not speed calculations
+
+    res <- matrix("", nloc, 0L) # initialise
+    freq <- integer()           #
+
+    for (i in seq_len(n)) { # loop along each individual
+        tmp <- sapply(x[i, ], as.character) # get the genotype for all loci as char strings
+        tmp <- matrix(unlist(strsplit(tmp, "|", fixed = TRUE)), nrow = nloc, byrow = TRUE) # arrange the alleles in a matrix
+        ntmp <- ncol(tmp) # the number of haplotypes
+        ftmp <- rep(1L, ntmp) # and their frequencies
+
+        ## if more than one haplotype was observed (ie, not haploid), we
+        ## check whether the same haplotype was observed several times
+        if (ntmp > 1) {
+            for (j in 1:(ntmp - 1)) {
+                for (k in (j + 1):ntmp) {
+                    if (identical(tmp[, j], tmp[, k])) {
+                        ftmp[j] <- ftmp[j] + 1L
+                        ftmp[k] <- 0L
+                    }
+                }
+            }
+        }
+        if (any(s <- ftmp == 0)) {
+            tmp <- tmp[, !s, drop = FALSE]
+            ftmp <- ftmp[!s]
+            ntmp <- ncol(tmp)
+        }
+
+        ## now check if these haplotypes were already observed or not:
+        new <- rep(TRUE, ntmp)
+        if (ncol(res) > 0) {
+            for (j in seq_len(ncol(res))) {
+                for (k in seq_len(ntmp)) {
+                    if (identical(res[, j], tmp[, k])) {
+                        freq[j] <- freq[j] + ftmp[k]
+                        new[k] <- FALSE
+                    }
+                }
+            }
+        }
+
+        ## if needed add the new haplotypes:
+        if (any(new)) {
+            res <- cbind(res, tmp[, new])
+            freq <- c(freq, ftmp[new])
+        }
+    }
+
+    rownames(res) <- colnames(x)
+    class(res) <- "haplotype.loci"
+    attr(res, "freq") <- freq
+    res
+}
+
+plot.haplotype.loci <- function(x, ...)
+{
+    y <- attr(x, "freq")
+    names(y) <- apply(x, 2, paste, collapse = "-")
+    barplot(y, ...)
+}
+
+dist.haplotype.loci <- function(x)
+{
+    n <- ncol(x)
+    if (n < 2) stop("less than two haplotypes")
+    d <- numeric(n * (n - 1) / 2)
+    k <- 1L
+    for (i in 1:(n - 1)) {
+        for (j in (i + 1):n) {
+            d[k] <- sum(x[, i] != x[, j])
+            k <- k + 1L
+        }
+    }
+    attr(d, "Size") <- n
+    attr(d, "Labels") <- colnames(x)
+    attr(d, "Diag") <- attr(d, "Upper") <- FALSE
+    attr(d, "call") <- match.call()
+    attr(d, "method") <- "N"
+    class(d) <- "dist"
+    d
+}
+
+LD <- function(x, locus = 1:2, details = TRUE)
+{
+    if (length(locus) != 2)
+        stop("you must specify two loci to compute linkage disequilibrium")
+    hap <- haplotype.loci(x, locus = locus)
+    alleles1 <- unique(hap[1, ])
+    alleles2 <- unique(hap[2, ])
+    k <- length(alleles1)
+    m <- length(alleles2)
+    nij <- matrix(0L, k, m, dimnames = list(alleles1, alleles2))
+    nij[t(hap)] <- attr(hap, "freq")
+    N <- sum(nij)
+    pij <- nij / N
+    pi <- rowSums(pij)
+    qj <- colSums(pij)
+    eij <- pi %o% qj * N
+    pi <- rep(pi, ncol(pij))
+    qj <- rep(qj, each = nrow(pij))
+    D <- pij - pi * qj
+    rij <- D / sqrt(pi * (1 - pi) * qj * (1 - qj))
+    df <- (k - 1) * (m - 1)
+    T2 <- df * N * sum(rij^2) / (k * m)
+    res <- c("T2" = T2, "df" = df, "P-val" = pchisq(T2, df, lower.tail = FALSE))
+    if (details) {
+        res <- list(nij, eij, rij, 2 * sum(nij * log(nij / eij)),
+                    2 * sum((nij - eij)^2 / eij), res)
+        names(res) <- c("Observed frequencies", "Expected frequencies", "Correlations among alleles",
+                       "LRT (G-squared)", "Pearson's test (chi-squared)", "T2")
+    }
+    res
+}
+
+LD2 <- function(x, locus = 1:2, details = TRUE)
+{
+    if (length(locus) != 2)
+        stop("you must specify two loci to compute linkage disequilibrium")
+    x <- x[, attr(x, "locicol")[locus]]
+    if (any(getPloidy(x) != 2))
+        stop("linkage disequilibrium with unphased genotypes works only for diploid data")
+    n <- nrow(x)
+    s <- summary(x)
+    alleles1 <- names(s[[1]]$allele)
+    alleles2 <- names(s[[2]]$allele)
+    genotypes1 <- names(s[[1]]$genotype)
+    genotypes2 <- names(s[[2]]$genotype)
+
+    ## get allele proportions:
+    P <- lapply(s, "[[", "allele")
+    P <- rapply(P, function(x) x/sum(x), how = "replace")
+
+    ## compute HW disequilibrium coefficients:
+    G <- lapply(s, "[[", "genotype")
+    G <- rapply(G, function(x) x/sum(x), how = "replace")
+    DHW <- vector("list", 2)
+    for (i in 1:2) {
+        alls <- if (i == 1) alleles1 else alleles2
+        tmp <- G[[i]][paste(alls, alls, sep = "/")] # frequencies of all possible homozygotes
+        tmp[is.na(tmp)] <- 0 # for the unobserved
+        names(tmp) <- alls
+        DHW[[i]] <- tmp - P[[i]]^2
+    }
+
+    Delta <- r <- numeric()
+
+    x1 <- as.integer(x[, 1L])
+    x2 <- as.integer(x[, 2L])
+
+    for (a in alleles1) {
+        Pa <- P[[1]][a]
+        Da <- DHW[[1]][a]
+        for (b in alleles2) {
+            Pb <- P[[2]][b]
+            Db <- DHW[[2]][b]
+
+            ## find the homozygote genotypes:
+            i <- match(paste(a, a, sep = "/"), genotypes1)
+            j <- match(paste(b, b, sep = "/"), genotypes2)
+
+            n1 <- n2 <- n3 <- n4 <- 1e100 # initialise
+            ## if the homozygotes were not observed set the n's accordingly,
+            ## else find them in the respective columns:
+            if (is.na(i)) n1 <- n2 <- 0 else Ho1 <- x1 == i
+            if (is.na(j)) n1 <- n3 <- 0 else Ho2 <- x2 == j
+
+            ## count the homozygotes at both loci:
+            if (as.logical(n1)) n1 <- sum(Ho1 & Ho2)
+
+            ## the next command will find the genotypes with the 1st allele (homozygote OR heterozygote):
+            tmp1 <- grep(paste0("^", a, "/|/", a, "$"), genotypes1)
+            if (!is.na(i)) tmp1 <- tmp1[tmp1 != i] # remove the homozygote genotype if needed
+            ## and get the heterozygotes:
+            if (length(tmp1)) He1 <- x1 %in% tmp1 else n3 <- n4 <- 0
+
+            ## ... and the same for the 2nd allele:
+            tmp2 <- grep(paste0("^", b, "/|/", b, "$"), genotypes2)
+            if (!is.na(j)) tmp2 <- tmp2[tmp2 != j]
+            if (length(tmp2)) He2 <- x2 %in% tmp2 else n2 <- n4 <- 0
+
+            ## if homozygotes were observed for each locus:
+            if (as.logical(n2)) n2 <- sum(Ho1 & He2)
+            if (as.logical(n3)) n3 <- sum(Ho2 & He1)
+            if (as.logical(n4)) n4 <- sum(He1 & He2)
+
+            delta <- (2 * n1 + n2 + n3 + 0.5 * n4)/n - 2 * Pa * Pb
+            Delta <- c(Delta, delta)
+            r <- c(r, delta^2 / ((Pa * (1 - Pa) + Da) * (Pb * (1 - Pb) + Db)))
+        }
+    }
+    k <- length(alleles1)
+    m <- length(alleles2)
+    df <- (k - 1) * (m - 1)
+    T2 <- df * n * sum(r) / (k * m)
+    res <- c("T2" = T2, "df" = df, "P-val" = pchisq(T2, df, lower.tail = FALSE))
+    if (details) {
+        dim(Delta) <- c(k, m)
+        dimnames(Delta) <- list(alleles1, alleles2)
+        res <- list(Delta = Delta, T2 = res)
+    }
+    res
 }

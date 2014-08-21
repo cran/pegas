@@ -25,7 +25,7 @@
     standard R objects).}
   \item{drop}{a logical specifying whether to returned an object of
     the smallest dimension possible, i.e., may return a vector or a
-    factor if \code{drop = TRUE}.}
+    factor if \code{drop = TRUE} (this is not the default).}
   \item{loci}{the loci (genes) to be plotted. By default, all loci are
     plotted.}
   \item{what}{the frequencies to be plotted. Three choices are possible:

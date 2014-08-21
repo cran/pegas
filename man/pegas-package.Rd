@@ -14,14 +14,10 @@ Population and Evolutionary Genetics Analysis System
   \code{library(help = pegas)}.
 
   More information on \pkg{pegas} can be found at
-  \url{http://ape.mpl.ird.fr/pegas/}.
-}
-\note{
-  Currently, \pkg{pegas} is in development and some functions need to be
-  tested more or less thoroughly.
+  \url{http://ape-package.ird.fr/pegas/}.
 }
 \author{
-  Emmanuel Paradis, Alastair Potts
+  Emmanuel Paradis, Alastair Potts, Klaus Schliep, David Winter
 
   Maintainer: Emmanuel Paradis
 }

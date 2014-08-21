@@ -5,7 +5,7 @@
 ## Copyright 2009-2013 Emmanuel Paradis, 2013 David Winter
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 MMD <- function(x, xlab = "Distance", main = "", rug = TRUE, legend = TRUE,
                 lcol = c("blue", "red"), lty = c(1, 1), ...)

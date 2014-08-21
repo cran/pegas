@@ -1,14 +1,14 @@
-## IO.R (2010-11-10)
+## IO.R (2014-07-08)
 
 ##   Input/Ouput
 
-## Copyright 2009-2010 Emmanuel Paradis
+## Copyright 2009-2014 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 read.loci <-
-    function(file, header = TRUE, loci.sep = "", allele.sep = "/",
+    function(file, header = TRUE, loci.sep = "", allele.sep = "/|",
              col.pop = NULL, col.loci = NULL, ...)
 {
     res <- read.table(file = file, header = header, sep = loci.sep, ...)
@@ -32,6 +32,48 @@ read.loci <-
     }
     as.loci.data.frame(res, allele.sep = allele.sep, col.pop = col.pop,
                        col.loci = col.loci)
+}
+
+read.vcf <- function(file, nloci = 1000, skip = 0)
+{
+    i <- 0
+    repeat {
+        X <- scan(file, what = "", sep = "\n", nlines = 1, skip = i, quiet = TRUE)
+        i <- i + 1
+        if (identical(substr(X, 1, 6), "#CHROM")) break
+    }
+    labs <- strsplit(X, "\t")[[1]]
+    X <- scan(file, what = "", sep = "\n", nlines = nloci, skip = i + skip, quiet = TRUE)
+    nloci <- length(X) # in case X is shorter than nloci
+    obj <- vector("list", nloci)
+    BUFFER <- matrix("", nloci, 7)
+    for (j in seq_len(nloci)) {
+        x <- strsplit(X[j], "\t")[[1]]
+        BUFFER[j, ] <- x[1:7]
+        obj[[j]] <- factor(gsub(":[[:graph:]]*$", "", x[-(1:9)]))
+    }
+    names(obj) <- BUFFER[, 3]
+    obj <- as.data.frame(obj)
+    rownames(obj) <- labs[-(1:9)]
+    obj <- as.loci(obj)#, allele.sep = "[|]")
+    ## substitute the allele names:
+    REF <- BUFFER[, 4]
+    ALT <- BUFFER[, 5]
+    for (j in seq_len(nloci)) {
+        lv <- levels(obj[[j]])
+        tmp <- strsplit(ALT[j], ",")[[1]]
+        ## we start from last allele in case there are more than 10 alleles...
+        for (i in length(tmp):1)
+            lv <- gsub(as.character(i), tmp[i], lv)
+        ## ... and we finish with the main allele:
+        lv <- gsub("0", REF[j], lv)
+        levels(obj[[j]]) <- lv
+    }
+    attr(obj, "CHR") <- as.integer(BUFFER[, 1])
+    attr(obj, "POS") <- as.numeric(BUFFER[, 2])
+    attr(obj, "QUAL") <- as.integer(BUFFER[, 6])
+    attr(obj, "FILTER") <- BUFFER[, 7]
+    obj
 }
 
 read.gtx <- function(file)
@@ -77,11 +119,11 @@ read.gtx <- function(file)
     obj
 }
 
-write.loci <- function(x, file = "", loci.sep = " ", allele.sep = "/", ...)
+write.loci <- function(x, file = "", loci.sep = " ", allele.sep = "/|", ...)
 {
-    if (allele.sep != "/") {
+    if (allele.sep != "/|") {
         for (i in attr(x, "locicol"))
-            levels(x[[i]]) <- gsub("/", allele.sep, levels(x[[i]]))
+            levels(x[[i]]) <- gsub("[/|]", allele.sep, levels(x[[i]]))
     }
     write.table(x, file = file, sep = loci.sep, ...)
 }

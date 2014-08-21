@@ -5,7 +5,7 @@
   This function writes allelic data into a text file.
 }
 \usage{
-write.loci(x, file = "", loci.sep = " ", allele.sep = "/", ...)
+write.loci(x, file = "", loci.sep = " ", allele.sep = "/|", ...)
 }
 \arguments{
   \item{x}{an object of class \code{"loci"}.}

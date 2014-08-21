@@ -9,7 +9,7 @@
   labelled `population', it is taken as a population variable.
 }
 \usage{
-read.loci(file, header = TRUE, loci.sep = "", allele.sep = "/",
+read.loci(file, header = TRUE, loci.sep = "", allele.sep = "/|",
           col.pop = NULL, col.loci = NULL, ...)
 }
 \arguments{
@@ -60,7 +60,7 @@ read.loci(file, header = TRUE, loci.sep = "", allele.sep = "/",
 }
 \author{Emmanuel Paradis}
 \seealso{
-  \code{\link{read.gtx}}, \code{\link{write.loci}},
-  \code{\link{summary.loci}}
+  \code{\link{read.gtx}}, \code{\link{read.vcf}},
+  \code{\link{write.loci}}, \code{\link{summary.loci}}
 }
 \keyword{IO}

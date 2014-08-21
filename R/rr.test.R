@@ -5,7 +5,7 @@
 ## Copyright 2011 Alastair Potts
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 rr.test <- function(x, y, out)
 {

@@ -1,18 +1,18 @@
-## conversion.R (2010-11-10)
+## conversion.R (2014-07-10)
 
 ##   Conversion Among Allelic Data Classes
 
-## Copyright 2009-2010 Emmanuel Paradis
+## Copyright 2009-2014 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 ## as.genind <- function(x)
 loci2genind <- function(x)
 {
     ipop <- which(names(x) == "population")
     pop <- if (length(ipop)) x[, ipop] else NULL
-    df2genind(as.matrix(x[, attr(x, "locicol")]), sep = "/", pop = pop)
+    df2genind(as.matrix(x[, attr(x, "locicol")]), sep = "[/\\|]", pop = pop)
 }
 
 as.loci <- function(x, ...) UseMethod("as.loci")
@@ -34,8 +34,31 @@ as.loci.genind <- function(x, ...)
 
 genind2loci <- function(x) as.loci.genind(x)
 
+## to be sure that alleles are sorted in their ASCII code
+## (not in lexicographically order) whatever the locale
+.sort.alleles <- function(x, index.only = FALSE)
+{
+    locale <- Sys.getlocale("LC_COLLATE")
+    if (!identical(locale, "C")) {
+        Sys.setlocale("LC_COLLATE", "C")
+        on.exit(Sys.setlocale("LC_COLLATE", locale))
+    }
+    if (index.only) order(x) else sort(x)
+}
+
 .check.order.alleles <- function(x)
 {
+    reorder.alleles <- function(x) {
+        for (i in seq_along(x)) {
+            y <- x[i]
+            if (!length(grep("/", y))) next # phased genotype (mixed with unphased ones)
+            y <- unlist(strsplit(y, "/"))
+            y <- paste(.sort.alleles(y), collapse = "/")
+            x[i] <- y
+        }
+        x
+    }
+
     for (k in attr(x, "locicol")) {
         y <- x[, k]
         if (is.numeric(y)) { # haploid with alleles coded with numerics
@@ -43,30 +66,15 @@ genind2loci <- function(x) as.loci.genind(x)
             next
         }
         lv <- levels(y)
-        if (!length(grep("/", lv))) next # if haploid
-        n <- length(lv)
-        if (n == 1) next
-        ## works with all levels of ploidy > 1:
-        a <- matrix(unlist(strsplit(lv, "/")), nrow = n, byrow = TRUE)
-        a <- t(apply(a, 1, sort))
-        #levels(y) <- apply(a, 1, paste, collapse = "/")
-        #drop <- FALSE
-        for (i in 1:(n - 1)) {
-            for (j in (i + 1):n) {
-                if (all(a[i, ] == a[j, ])) {
-                    y[y == lv[j]] <- lv[i]
-                    #drop <- TRUE
-                    #break
-                }
-            }
-        }
-        x[, k] <- factor(y)
+        if (!length(grep("/", lv))) next # if haploid or phased genotype
+        a <- reorder.alleles(lv) # works with all levels of ploidy > 1
+        if (!identical(a, lv)) levels(x[, k]) <- a
     }
     x
 }
 
 as.loci.data.frame <-
-    function(x, allele.sep = "/", col.pop = NULL, col.loci = NULL, ...)
+    function(x, allele.sep = "/|", col.pop = NULL, col.loci = NULL, ...)
 {
     if (is.null(col.pop)) {
         ipop <- which(tolower(names(x)) == "population")
@@ -85,10 +93,10 @@ as.loci.data.frame <-
     }
     if (is.character(col.loci))
         col.loci <- match(col.loci, names(x))
-    if (allele.sep != "/") {
+    if (allele.sep != "/|") {
         if (allele.sep == "")
             stop("alleles within a genotype must be separated")
-        for (i in 1:col.loci)
+        for (i in col.loci)
             levels(x[, i]) <- gsub(allele.sep, "/", levels(x[, i]))
     }
     class(x) <- c("loci", "data.frame")
@@ -96,8 +104,8 @@ as.loci.data.frame <-
     .check.order.alleles(x)
 }
 
-as.loci.factor <- function(x, allele.sep = "/", ...)
+as.loci.factor <- function(x, allele.sep = "/|", ...)
     as.loci.data.frame(data.frame(x), allele.sep = allele.sep, ...)
 
-as.loci.character <- function(x, allele.sep = "/", ...)
+as.loci.character <- function(x, allele.sep = "/|", ...)
     as.loci.data.frame(data.frame(factor(x)), allele.sep = allele.sep, ...)

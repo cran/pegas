@@ -1,11 +1,11 @@
-## site.spectrum.R (2011-07-19)
+## site.spectrum.R (2014-01-22)
 
 ##   Site Frequency Spectrum
 
-## Copyright 2009-2011 Emmanuel Paradis
+## Copyright 2009-2014 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
-## See the file ../COPYING for licensing issues.
+## See the file ../DESCRIPTION for licensing issues.
 
 site.spectrum <- function(x, folded = TRUE, outgroup = 1)
 {
@@ -13,10 +13,12 @@ site.spectrum <- function(x, folded = TRUE, outgroup = 1)
     n <- dim(x)[1]
     if (n == 1 || is.vector(x))
         stop("only one sequence in the data set")
+
+    ss <- seg.sites(x)
+
     if (folded) {
         more.than.two.states <- 0L
         spectrum <- integer(floor(n/2))
-        ss <- seg.sites(x)
         for (i in ss) {
             bfi <- base.freq(x[, i], freq = TRUE)
             bfi <- bfi[bfi > 0]
@@ -31,21 +33,14 @@ site.spectrum <- function(x, folded = TRUE, outgroup = 1)
             warning(paste(more.than.two.states,
                           "sites with more than two states were ignored"))
     } else { # unfolded spectrum
-        ambiguous.outgroup.state <- 0L
-        spectrum <- integer(n - 1)
-        ss <- seg.sites(x[-outgroup, ])
-        for (i in ss) {
-            anc <- x[outgroup, i, drop = TRUE]
-            if (!anc %in% as.raw(c(24, 40, 72, 136)))
-                ambiguous.outgroup.state <- ambiguous.outgroup.state + 1L
-            else {
-                j <- sum(x[-outgroup, i, drop = TRUE] == anc)
-                spectrum[j] <- spectrum[j] + 1L
-            }
+        anc <- x[outgroup, ss, drop = TRUE]
+        outgroup.state <- anc %in% as.raw(c(24, 40, 72, 136))
+        if (s <- sum(!outgroup.state)) {
+            warning(paste(s, "sites with ambiguous state were ignored"))
+            ss <- ss[outgroup.state]
         }
-        if (ambiguous.outgroup.state)
-            warning(paste(ambiguous.outgroup.state,
-                          "sites with ambiguous state were ignored"))
+        spectrum <- apply(x[, ss], 2, function(y) sum(y[outgroup] != y[-outgroup]))
+        spectrum <- tabulate(spectrum, nrow(x) - 1)
     }
     class(spectrum) <- "spectrum"
     attr(spectrum, "folded") <- folded
