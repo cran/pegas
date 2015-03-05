@@ -365,7 +365,7 @@ in Section \ref{sec:tab}, so the objective is to have them in R as a
 
 We also note the function \code{read.genealex} in the package \poppr\
 \cite{Kamvar2014} which reads a Genalex file that has been exported
-into csv format and returns an object class \code{"genind"}.
+into csv format and returns an object of class \code{"genind"}.
 
 
 \section{Editing and Writing Genetic Data Files}
