@@ -1,4 +1,4 @@
-## haplotype.R (2015-03-05)
+## haplotype.R (2015-05-05)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
@@ -165,8 +165,9 @@ haploNet <- function(h, d = NULL)
     dimnames(link) <- list(NULL, c("", "", "step", "Prob"))
     attr(link, "freq") <- freq
     attr(link, "labels") <- rownames(h)
-    attr(link, "alter.links") <-
-        altlink <- cbind(altlink, .TempletonProb(altlink[, 3], ncol(h)))
+    if (nrow(altlink))
+        attr(link, "alter.links") <-
+            cbind(altlink, .TempletonProb(altlink[, 3], ncol(h)))
     class(link) <- "haploNet"
     link
 }
@@ -554,6 +555,30 @@ sort.haplotype <-
     attr(x, "index") <- idx[o]
     class(x) <- oc
     attr(x, "from") <- from
+    x
+}
+
+subset.haplotype <- function(x, minfreq = 1, maxfreq = Inf, maxna = Inf,
+                             na = c("N", "?"), ...)
+{
+    oc <- oldClass(x)
+    idx <- attr(x, "index")
+    f <- sapply(idx, length)
+    s <- f <= maxfreq & f >= minfreq
+    if (is.finite(maxna)) {
+        na <- tolower(na)
+        all <- c("r", "m", "w", "s", "k", "y", "v", "h", "d", "b", "n", "-", "?")
+        if (identical(na, "all")) na <- all
+        if (identical(na, "ambiguous")) na <- all[1:11]
+        freq <- if (maxna < 1) FALSE else TRUE
+        foo <- function(x) sum(base.freq(x, freq, TRUE)[na])
+        count.na <- numeric(n <- nrow(x))
+        for (i in seq_len(n)) count.na[i] <- foo(x[i, ]) # cannot use apply
+        s <- s & count.na <= maxna
+    }
+    x <- x[s, ]
+    attr(x, "index") <- idx[s]
+    class(x) <- oc
     x
 }
 

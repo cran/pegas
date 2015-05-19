@@ -57,8 +57,8 @@ is.phased(x)
   alleles. The matrix is numeric by default, or character if the
   argument \code{alleles} is given.
 
-   \code{proba.genotype} returns a numeric vector with names set as the
-   genotypes.
+  \code{proba.genotype} returns a numeric vector with names set as the
+  genotypes.
 
   \code{is.snp} returns a logical vector specifying whether each locus
   is a SNP.
@@ -68,9 +68,8 @@ is.phased(x)
 }
 \author{Emmanuel Paradis}
 \examples{
-require(adegenet)
-data(nancycats)
-X <- as.loci(nancycats)[, 2:3]
+data(jaguar)
+X <- jaguar[, 1:2]
 getAlleles(X)
 getGenotypes(X)
 expand.genotype(2)
@@ -80,7 +79,7 @@ proba.genotype() # classical HWE with 2 alleles
 ## an octoploid with a six-allele locus (1287 possible genotypes):
 length(p <- proba.genotype(alleles = LETTERS[1:6], ploidy = 8))
 max(p) # ~ 0.006
-## the cat data:
+## back to the jaguar data:
 s <- summary(X)
 ## allele counts from the first locus:
 p <- s[[1]]$allele

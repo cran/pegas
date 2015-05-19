@@ -1,8 +1,8 @@
-## hw.test.R (2014-07-10)
+## hw.test.R (2015-03-30)
 
 ##   Test of Hardy--Weinberg Equilibrium
 
-## Copyright 2009-2014 Emmanuel Paradis
+## Copyright 2009-2014 Emmanuel Paradis, 2015 Thibaut Jombart
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
@@ -53,7 +53,19 @@ expand.genotype <- function(n, alleles = NULL, ploidy = 2, matrix = FALSE)
     ans
 }
 
-hw.test <- function(x, B = 1000)
+
+## CODE MODIFICATION BY THIBAUT JOMBART
+## t.jombart@imperial.ac.uk
+## March 2015
+##
+
+## generic
+hw.test <- function (x, B=1000, ...){
+    UseMethod("hw.test")
+}
+
+## method for class 'loci'
+hw.test.loci <- function(x, B = 1000, ...)
 {
     test.polyploid <- function(x, ploidy) {
         if (ploidy < 2) return(rep(NA_real_, 3))
@@ -109,7 +121,33 @@ hw.test <- function(x, B = 1000)
         ans <- cbind(ans, "Pr.exact" = mapply(test.mc, y, ploidy))
     }
     ans
-}
+} # end hw.test.loci
+
+
+
+## method for class 'genind'
+hw.test.genind <- function(x, B=1000, ...){
+    ## checks
+    byPop <- FALSE
+    pop <- NULL
+    if(is.null(pop)) pop <- pop(x)
+    if(byPop && is.null(pop(x))){
+        warning("byPop requested but pop(x) is NULL")
+        byPop <- FALSE
+    }
+
+    ## convert genind to loci
+    x <- as.loci(x)
+
+    ## call hw.test.loci
+    out <- hw.test.loci(x=x, B=B, ...)
+
+    ## return result
+    return(out)
+} # end hw.test.genind
+
+
+
 
 ## version avec rhyper(): (Huber et al. 2006, Biometrics)
 ## (doesn't work)
