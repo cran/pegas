@@ -1,6 +1,6 @@
-df6d37bfc969c4c3ab658556ead7de97 *DESCRIPTION
+34b800c7382bbe575d6644427e6dadbe *DESCRIPTION
 bfaa33c061b401bd0d8517074449eabe *NAMESPACE
-3e905f7b7cb558ada29eec5d9b583f17 *NEWS
+097c1152af9fc7d8b0eb654da7c007e9 *NEWS
 4972b8305bd2302b545ca55a1b9753f9 *R/Fst.R
 2f253f19e1379fdaac8f152fa4ba277e *R/IO.R
 a2e72998629ea148adf1c8d23ce2945a *R/MMD.R
@@ -20,13 +20,13 @@ cd77127a617162017c1cbf1d8b195882 *R/summary.loci.R
 eca76dd03f28d5a337765a8e3fcc1c81 *R/tajima.test.R
 561341fbcad02fe90f7b9f8788933b8b *R/theta.R
 bc29fb75b19649a905a9b4866f2a7f2d *R/zzz.R
-f766167f170e948a4ee3e6ad621cd3f1 *build/vignette.rds
+9091601342332435132c914fb0822928 *build/vignette.rds
 28851c59cc5535f917122a87b4808461 *data/jaguar.rda
 ad12dc674e3012ec9d8b003ccb02f404 *inst/CITATION
 f17de9c5502c5d143bd031194e21a915 *inst/doc/ReadingFiles.R
 6db8bfa83693f8a2c112ca81acf116cd *inst/doc/ReadingFiles.Rnw
-989af85cc6bf9ece1785fca5e8b010da *inst/doc/ReadingFiles.pdf
-da9dbb5b0738770d78ac5a67c203b6b8 *man/Fst.Rd
+642e5aa9c71f456a964e01f65d879095 *inst/doc/ReadingFiles.pdf
+681cf6ec9f74d9fb84c2de54714ffd42 *man/Fst.Rd
 69c1520fda9c71084553496288450f1d *man/LD.Rd
 edff9c66095434c589fc37912773df5c *man/MMD.Rd
 361e4413e46da7e8ad9725327725d2f4 *man/R2.test.Rd
