@@ -1,6 +1,6 @@
 Package: pegas
-Version: 0.8-1
-Date: 2015-06-24
+Version: 0.8-2
+Date: 2015-09-25
 Title: Population and Evolutionary Genetics Analysis System
 Authors@R: c(person("Emmanuel", "Paradis", role = c("aut", "cre", "cph"), email = "Emmanuel.Paradis@ird.fr"),
   person("Thibaut", "Jombart", role = c("aut", "cph")),
@@ -14,7 +14,7 @@ Description: Functions for reading, writing, plotting, analysing, and manipulati
 License: GPL (>= 2)
 URL: http://ape-package.ird.fr/pegas.html
 NeedsCompilation: yes
-Packaged: 2015-06-24 12:20:06 UTC; paradis
+Packaged: 2015-09-25 07:43:04 UTC; paradis
 Author: Emmanuel Paradis [aut, cre, cph],
   Thibaut Jombart [aut, cph],
   Klaus Schliep [aut, cph],
@@ -22,4 +22,4 @@ Author: Emmanuel Paradis [aut, cre, cph],
   David Winter [aut, cph]
 Maintainer: Emmanuel Paradis <Emmanuel.Paradis@ird.fr>
 Repository: CRAN
-Date/Publication: 2015-06-24 15:33:54
+Date/Publication: 2015-09-25 14:12:19

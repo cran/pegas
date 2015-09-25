@@ -1,5 +1,6 @@
 \name{haploNet}
 \alias{haploNet}
+\alias{print.haploNet}
 \alias{plot.haploNet}
 \alias{as.network.haploNet}
 \alias{as.igraph.haploNet}
@@ -10,13 +11,15 @@
 }
 \usage{
 haploNet(h, d = NULL)
+\method{print}{haploNet}(x, ...)
 \method{plot}{haploNet}(x, size = 1, col = "black", bg = "white",
      col.link = "black", lwd = 1, lty = 1, pie = NULL,
      labels = TRUE, font = 2, cex = 1, scale.ratio = 1,
      asp = 1, legend = FALSE, fast = FALSE, show.mutation = TRUE,
      threshold = c(1, 2), ...)
-\method{as.network}{haploNet}(x, directed = FALSE, ...)
-\method{as.igraph}{haploNet}(x, directed = FALSE, use.labels = TRUE, ...)
+\method{as.network}{haploNet}(x, directed = FALSE, altlinks = TRUE, ...)
+\method{as.igraph}{haploNet}(x, directed = FALSE, use.labels = TRUE,
+        altlinks = TRUE, ...)
 }
 \arguments{
   \item{h}{an object of class \code{"haplotype"}.}
@@ -66,12 +69,14 @@ haploNet(h, d = NULL)
     (\code{FALSE} by default).}
   \item{use.labels}{a logical specifying whether to use the original
     labels in the returned network.}
+  \item{altlinks}{whether to output the alternative links when
+    converting to another class; \code{TRUE} by default.}
   \item{\dots}{further arguments passed to \code{plot}.}
 }
 \details{
   By default, the haplotype network is built using an infinite site
   model (i.e., uncorrected or Hamming distance) of DNA sequences and
-  pairwise deletion of missing data (see \code{\link[ape]{dist.dna}})
+  pairwise deletion of missing data (see \code{\link[ape]{dist.dna}}).
   Users may specify their own distance with the argument \code{d}. There
   is no check of labels, so the user must make sure that the distances
   are ordered in the same way than the haplotypes.

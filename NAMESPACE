@@ -9,13 +9,16 @@ export(alleles2loci, amova, as.igraph.haploNet, as.loci, as.network.haploNet,
        selectQUAL, site.spectrum, tajima.test, theta.h, theta.k, theta.msat,
        theta.s, theta.tree, VCFheader, VCFlabels, VCFloci, write.loci)
 
-## we try to limit the imports for the moment (2013-08-12)
 importFrom(ape, BOTHlabels, branching.times, base.freq, dist.dna,
            floating.pie.asp, perm.rowscols, rcoal, seg.sites)
 importFrom(adegenet, df2genind, genind2df)
-importFrom(graphics, plot)
-## importFrom(stats, density)
-importFrom(utils, edit)
+importFrom(graphics, abline, barplot, hist, lines, locator, mtext, par,
+           plot, segments, strheight, symbols, text)
+importFrom(grDevices, rainbow)
+importFrom(stats, as.dist, cophenetic, density, dist, integrate, na.omit,
+           nlminb, pbeta, pchisq, pnorm, printCoefmat, rpois, uniroot,
+           weighted.mean)
+importFrom(utils, as.roman, edit, read.table, write.table)
 
 S3method(print, amova)
 
@@ -36,6 +39,7 @@ S3method(is.snp, VCFinfo)
 #S3method(as.igraph, haploNet)
 #S3method(as.network, haploNet)
 S3method(plot, haploNet)
+S3method(print, haploNet)
 
 S3method("[", haplotype)
 S3method(plot, haplotype)

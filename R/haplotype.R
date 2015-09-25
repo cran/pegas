@@ -1,4 +1,4 @@
-## haplotype.R (2015-05-05)
+## haplotype.R (2015-09-24)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
@@ -165,11 +165,24 @@ haploNet <- function(h, d = NULL)
     dimnames(link) <- list(NULL, c("", "", "step", "Prob"))
     attr(link, "freq") <- freq
     attr(link, "labels") <- rownames(h)
-    if (nrow(altlink))
-        attr(link, "alter.links") <-
-            cbind(altlink, .TempletonProb(altlink[, 3], ncol(h)))
+    if (nrow(altlink)) {
+        altlink <- cbind(altlink, .TempletonProb(altlink[, 3], ncol(h)))
+        dimnames(altlink) <- dimnames(link)
+        attr(link, "alter.links") <- altlink
+    }
     class(link) <- "haploNet"
     link
+}
+
+print.haploNet <- function(x, ...)
+{
+    cat("Haplotype network with:\n")
+    cat("  ", length(attr(x, "freq")), "haplotypes\n")
+    n <- nrow(x)
+    cat("  ", n, "links\n")
+    cat("  ", nrow(attr(x, "alter.links")), "alternative links\n")
+    cat("   link lengths between", x[1, 3], "and", x[n, 3], "steps\n\n")
+    cat("Use print.default() to display all elements.\n")
 }
 
 .drawSymbolsHaploNet <- function(xx, yy, size, col, bg, pie)
@@ -602,25 +615,28 @@ print.haplotype <- function(x, ...)
 }
 
 if (getRversion() >= "2.15.1") utils::globalVariables(c("network", "network.vertex.names<-"))
-as.network.haploNet <- function(x, directed = FALSE, ...)
+as.network.haploNet <- function(x, directed = FALSE, altlinks = TRUE, ...)
 {
-    res <- network(x[, 1:2], directed = directed, ...)
+    res <- x[, 1:2]
+    if (altlinks) res <- rbind(res, attr(x, "alter.links")[, 1:2])
+    res <- network(res, directed = directed, ...)
     network.vertex.names(res) <- attr(x, "labels")
     res
 }
 
 if (getRversion() >= "2.15.1") utils::globalVariables("graph.edgelist")
-as.igraph.haploNet <- function(x, directed = FALSE, use.labels = TRUE, ...)
+as.igraph.haploNet <- function(x, directed = FALSE, use.labels = TRUE,
+                               altlinks = TRUE, ...)
 {
-    directed <- directed
     y <- x[, 1:2]
+    if (altlinks) y <- rbind(y, attr(x, "alter.links")[, 1:2])
     y <-
         if (use.labels) matrix(attr(x, "labels")[y], ncol = 2)
         else y - 1L
     graph.edgelist(y, directed = directed, ...)
 }
 
-haplotype.loci <- function(x, locus = 1:2, ...)
+haplotype.loci <- function(x, locus = 1:2, quiet = FALSE, ...)
 {
     x <- x[, attr(x, "locicol")[locus]]
     nloc <- ncol(x)
@@ -636,11 +652,21 @@ haplotype.loci <- function(x, locus = 1:2, ...)
 
 ### NOTE: trying to find identical rows first does not speed calculations
 
-    res <- matrix("", nloc, 0L) # initialise
-    freq <- integer()           #
+    ## initialise:
+    res <- matrix("", nloc, 0L)
+    freq <- integer()
+
+    class(x) <- "data.frame" # drop "loci"
+    ## the two lines below are the same as y <- as.matrix(sapply(x, as.integer))
+    ## but slightly faster
+    y <- matrix(NA_integer_, n, nloc)
+    for (i in seq_len(nloc)) y[, i] <- as.integer(x[[i]])
+
+    GENO <- lapply(x, levels)
 
     for (i in seq_len(n)) { # loop along each individual
-        tmp <- sapply(x[i, ], as.character) # get the genotype for all loci as char strings
+        if (!quiet && !(i %% 100)) cat("\rAnalysing individual no.", i, "/", n)
+        tmp <- mapply("[", GENO, y[i, ]) # get the genotype for all loci as char strings
         tmp <- matrix(unlist(strsplit(tmp, "|", fixed = TRUE)), nrow = nloc, byrow = TRUE) # arrange the alleles in a matrix
         ntmp <- ncol(tmp) # the number of haplotypes
         ftmp <- rep(1L, ntmp) # and their frequencies
@@ -666,11 +692,12 @@ haplotype.loci <- function(x, locus = 1:2, ...)
         ## now check if these haplotypes were already observed or not:
         new <- rep(TRUE, ntmp)
         if (ncol(res) > 0) {
-            for (j in seq_len(ncol(res))) {
-                for (k in seq_len(ntmp)) {
+            for (k in seq_len(ntmp)) {
+                for (j in seq_len(ncol(res))) {
                     if (identical(res[, j], tmp[, k])) {
                         freq[j] <- freq[j] + ftmp[k]
                         new[k] <- FALSE
+                        break
                     }
                 }
             }
@@ -682,6 +709,7 @@ haplotype.loci <- function(x, locus = 1:2, ...)
             freq <- c(freq, ftmp[new])
         }
     }
+    if (!quiet) cat("\rAnalysing individual no.", n, "/", n, "\n")
 
     rownames(res) <- colnames(x)
     class(res) <- "haplotype.loci"
