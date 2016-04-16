@@ -1,6 +1,6 @@
-/* readVCFbin.c    2015-04-01 */
+/* readVCFbin.c    2016-01-19 */
 
-/* Copyright 2015 Emmanuel Paradis */
+/* Copyright 2015-2016 Emmanuel Paradis */
 
 /* This file is part of the R-package `pegas'. */
 /* See the file ../DESCRIPTION for licensing issues. */
@@ -223,17 +223,43 @@ SEXP build_factor_loci(SEXP x, SEXP N)
     buf = (int*)R_alloc(Nind, sizeof(int));
     buf[0] = i;
     p[0] = 1;
-    for (j = 1; j < Nind - 1; j++) { /* start at the 2nd individual */
+    if (Nind > 1) {
+	for (j = 1; j < Nind - 1; j++) { /* start at the 2nd individual */
+	    while (xr[i] != 0x09) i++;
+	    i++;
+	    done = 0;
+	    for (k = 0; k < nunique; k++) {
+		for (i1 = i, i2 = buf[k]; ; i1++, i2++) {
+		    if (xr[i1] != xr[i2]) break;
+		    if (xr[i1] != RIGHT && xr[i1] != 0x09) continue;
+		    p[j] = k + 1;
+		    done = 1;
+		    break;
+		}
+		if (done) break;
+	    }
+	    if (!done) {
+		buf[nunique] = i;
+		p[j] = ++nunique;
+	    }
+	    /* DELETE THIS LINE TO FIX A BUG (2016-01-19): i = i1; */
+	}
+
+	/* CHANGE THE LINE BELOW BY THE NEXT ONE, SAME FIX THAN ABOVE (2016-01-19): */
+	/* if (RIGHT == 0x3a) while (xr[i] != 0x09) i++; */
 	while (xr[i] != 0x09) i++;
-	i++;
+
+	/* treat the last individual separately */
 	done = 0;
+	i++;
 	for (k = 0; k < nunique; k++) {
 	    for (i1 = i, i2 = buf[k]; ; i1++, i2++) {
 		if (xr[i1] != xr[i2]) break;
-		if (xr[i1] != RIGHT && xr[i1] != 0x09) continue;
-		p[j] = k + 1;
-		done = 1;
-		break;
+		if (i1 == n - 1 || xr[i1] == RIGHT) {
+		    p[j] = k + 1;
+		    done = 1;
+		    break;
+		}
 	    }
 	    if (done) break;
 	}
@@ -241,28 +267,6 @@ SEXP build_factor_loci(SEXP x, SEXP N)
 	    buf[nunique] = i;
 	    p[j] = ++nunique;
 	}
-	i = i1;
-    }
-
-    if (RIGHT == 0x3a) while (xr[i] != 0x09) i++;
-
-    /* treat the last individual separately */
-    done = 0;
-    i++;
-    for (k = 0; k < nunique; k++) {
-	for (i1 = i, i2 = buf[k]; ; i1++, i2++) {
-	    if (xr[i1] != xr[i2]) break;
-	    if (i1 == n - 1 || xr[i1] == RIGHT) {
-		p[j] = k + 1;
-		done = 1;
-		break;
-	    }
-	}
-	if (done) break;
-    }
-    if (!done) {
-	buf[nunique] = i;
-	p[j] = ++nunique;
     }
 
     PROTECT(levels = allocVector(STRSXP, nunique));

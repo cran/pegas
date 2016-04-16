@@ -1,18 +1,18 @@
-## conversion.R (2015-08-27)
+## conversion.R (2016-03-16)
 
 ##   Conversion Among Allelic Data Classes
 
-## Copyright 2009-2015 Emmanuel Paradis
+## Copyright 2009-2016 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
 
-## as.genind <- function(x)
 loci2genind <- function(x)
 {
     ipop <- which(names(x) == "population")
     pop <- if (length(ipop)) x[, ipop] else NULL
-    df2genind(as.matrix(x[, attr(x, "locicol")]), sep = "[/\\|]", pop = pop)
+    df2genind(as.matrix(x[, attr(x, "locicol")]), sep = "[/\\|]",
+              pop = pop, NA.char = ".") # fix by Thibaut (2015-11-10)
 }
 
 as.loci <- function(x, ...) UseMethod("as.loci")
@@ -35,7 +35,7 @@ as.loci.genind <- function(x, ...)
 genind2loci <- function(x) as.loci.genind(x)
 
 ## to be sure that alleles are sorted in their ASCII code
-## (not in lexicographically order) whatever the locale
+## (not in lexicographical order) whatever the locale
 .sort.alleles <- function(x, index.only = FALSE)
 {
     locale <- Sys.getlocale("LC_COLLATE")
@@ -142,6 +142,27 @@ alleles2loci <- function(x, ploidy = 2, rownames = NULL, population = NULL,
     names(obj) <- loci.nms
     obj <- as.data.frame(obj, row.names = idx)
     obj <- as.loci(obj)
-    if (withPop) obj$population <- pop
+    if (withPop) obj$population <- factor(pop)
     obj
+}
+
+na.omit.loci <- function(object, na.alleles = c("0", "."), ...)
+{
+    pat <- c(paste0("^", na.alleles, "/"), paste0("/", na.alleles, "$"), paste0("/", na.alleles, "/"))
+    pat <- paste(pat, collapse = "|")
+    drop <- logical(nrow(object))
+    M <- 1:ncol(object)
+    for (i in attr(object, "locicol")) {
+        x <- object[[i]]
+        if (length(na <- grep(pat, x))) drop[na] <- TRUE
+        if (any(na <- is.na(x))) drop[na] <- TRUE
+    }
+    object <- object[!drop, ]
+    for (i in M) {
+        if (is.factor(x <- object[[i]])) {
+            drop <- tabulate(x, nlevels(x)) == 0
+            if (any(drop)) object[[i]] <- factor(x)
+        }
+    }
+    object
 }
