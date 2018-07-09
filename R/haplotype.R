@@ -1,8 +1,8 @@
-## haplotype.R (2017-05-01)
+## haplotype.R (2018-07-07)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
-## Copyright 2009-2017 Emmanuel Paradis, 2013 Klaus Schliep
+## Copyright 2009-2018 Emmanuel Paradis, 2013 Klaus Schliep
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
@@ -216,6 +216,9 @@ haplotype.character <- function(x, labels = NULL, ...)
     obj
 }
 
+haplotype.numeric <- function(x, labels = NULL, ...)
+    haplotype.character(x = x, labels = labels, ...)
+
 haploFreq <- function(x, fac, split = "_", what = 2, haplo = NULL)
 {
     if (missing(fac)) {
@@ -310,13 +313,12 @@ haploNet <- function(h, d = NULL, getProb = TRUE)
 print.haploNet <- function(x, ...)
 {
     cat("Haplotype network with:\n")
-    cat("  ", length(attr(x, "labels")), "haplotypes\n")
-    n <- nrow(x)
-    msg <- if (n > 1) "links\n" else "link\n"
-    cat("  ", n, msg)
+    cat(" ", length(attr(x, "labels")), "haplotypes\n")
+    N <- n <- nrow(x)
     altlinks <- attr(x, "alter.links")
-    cat("  ", if (is.null(altlinks)) 0 else nrow(altlinks), "alternative links\n")
-    cat("   link lengths between", x[1, 3], "and", x[n, 3], "steps\n\n")
+    if (!is.null(altlinks)) N <- N + nrow(altlinks)
+    cat(" ", N, if (N > 1) "links\n" else "link\n")
+    cat("  link lengths between", x[1, 3], "and", x[n, 3], "steps\n\n")
     cat("Use print.default() to display all elements.\n")
 }
 
@@ -689,9 +691,14 @@ plot.haploNet <-
     if (!is.null(altlink) && !identical(threshold, 0))
         .drawAlternativeLinks(xx, yy, altlink, threshold, show.mutation)
 
-    if (show.mutation)
+    if (show.mutation) {
+        if (show.mutation == 1 && all(x[, 3] < 1)) {
+            warning("link lengths < 1: cannot use the default for 'show.mutation' (changed to 3)")
+            show.mutation <- 3
+        }
         .labelSegmentsHaploNet(xx, yy, link, x[, 3], size, lwd, col.link,
                                show.mutation)
+    }
 
     .drawSymbolsHaploNet(xx, yy, size, col, bg, pie)
 
@@ -833,7 +840,7 @@ haplotype.loci <- function(x, locus = 1:2, quiet = FALSE, compress = TRUE,
         s <- apply(is.phased(x), 1, all)
         if (any(!s)) {
             x <- x[s, ]
-            warning(paste0("dropping ", sum(!s), " observation(s) out of ", n, " due to unphased genotype(s)"))
+            warning(paste("dropping", sum(!s), "individual(s) out of", n, "due to unphased genotype(s)"))
             n <- nrow(x)
         }
     }
@@ -841,7 +848,7 @@ haplotype.loci <- function(x, locus = 1:2, quiet = FALSE, compress = TRUE,
 ### NOTE: trying to find identical rows first does not speed calculations
 
     ## initialise (works for all levels of ploidy)
-    nh <- getPloidy(x[, 1, drop = FALSE]) # the number of haplotypes
+    nh <- .checkPloidy(x[, 1, drop = FALSE]) # the number of haplotypes
     names(nh) <- NULL
     res <- matrix("", nloc, nh * n)
     class(x) <- "data.frame" # drop "loci"
@@ -906,7 +913,7 @@ plot.haplotype.loci <- function(x, ...)
     barplot(y, ...)
 }
 
-dist.hamming <- function(x) 
+dist.hamming <- function(x)
 {
     n <- nrow(x)
     if (n < 2) stop("less than two haplotypes")
@@ -985,7 +992,7 @@ LD2 <- function(x, locus = c(1, 2), details = TRUE)
     if (length(locus) != 2)
         stop("you must specify two loci to compute linkage disequilibrium")
     x <- x[, attr(x, "locicol")[locus]]
-    if (any(getPloidy(x) != 2))
+    if (any(.checkPloidy(x) != 2))
         stop("linkage disequilibrium with unphased genotypes works only for diploid data")
     n <- nrow(x)
     s <- summary(x)
@@ -1202,6 +1209,8 @@ LDmap <- function(d, POS = NULL, breaks = NULL, col = NULL, border = NA,
 
 all.equal.haploNet <- function(target, current, use.steps = TRUE, ...)
 {
+    nt1 <- deparse(substitute(target))
+    nt2 <- deparse(substitute(current))
     if (identical(target, current)) return(TRUE)
     ## function to build a list to make comparisons easier
     foo <- function(x) {
@@ -1229,13 +1238,13 @@ all.equal.haploNet <- function(target, current, use.steps = TRUE, ...)
     comp12 <- is.na(match(labs1, labs2))
     comp21 <- is.na(match(labs2, labs1))
     if (all(comp12) && all(comp21))
-        return("No common label between target and current")
+        return(paste0("No common label between ", nt1, " and ", nt2))
     else {
         if (any(comp12))
-            msg <- c(msg, "Labels in current not in target:",
+            msg <- c(msg, paste0("Labels in ", nt2, " not in ", nt1, ":"),
                      paste(labs1[comp12], sep = ", "))
         if (any(comp21))
-            msg <- c(msg, "Labels in target not in current:",
+            msg <- c(msg, paste0("Labels in ", nt1, " not in ", nt2, ":"),
                      paste(labs2[comp21], sep = ", "))
     }
 
@@ -1248,9 +1257,9 @@ all.equal.haploNet <- function(target, current, use.steps = TRUE, ...)
         if (anyNA(comp12)) {
             comp21 <- match(links2, links1)
             msg <- c(msg, "Number of links equal",
-                     "Links in current not in target:",
+                     paste0("Links in ", nt1, " not in ", nt2, ":"),
                      bar(links1[is.na(comp12)]),
-                     "Links in target not in current:",
+                     paste0("Links in ", nt2, " not in ", nt1, ":"),
                      bar(links2[is.na(comp21)]))
         }
         if (use.steps) {
@@ -1265,10 +1274,10 @@ all.equal.haploNet <- function(target, current, use.steps = TRUE, ...)
         msg <- c(msg, "Number of links different")
         comp21 <- match(links2, links1)
         if (anyNA(comp12))
-            msg <- c(msg, "Links in current not in current:",
+            msg <- c(msg, paste0("Links in ", nt1, " not in ", nt2, ":"),
                      bar(links1[is.na(comp12)]))
         if (anyNA(comp21))
-            msg <- c(msg, "Links in target not in target:",
+            msg <- c(msg, paste0("Links in ", nt2, " not in ", nt1, ":"),
                      bar(links2[is.na(comp21)]))
         if (use.steps) {
             tmp1 <- X1$step[!is.na(comp12)]
@@ -1276,7 +1285,7 @@ all.equal.haploNet <- function(target, current, use.steps = TRUE, ...)
             test <- tmp1 != tmp2
             if (any(test))
                 msg <- c(msg,
-                         "Links identical but of lengths different (in target, in current):",
+                         paste0("Links identical but of lengths different (in ", nt1, ", in ", nt2, "):"),
                          bar2(links1[tmp1][test], tmp1[test], tmp2[test]))
         }
     }

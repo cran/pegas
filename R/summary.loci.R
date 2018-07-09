@@ -1,15 +1,51 @@
-## summary.loci.R (2015-05-19)
+## summary.loci.R (2018-07-07)
 
 ##   Print and Summaries of Loci Objects
 
-## Copyright 2009-2015 Emmanuel Paradis
+## Copyright 2009-2018 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
 
-getPloidy <- function(x) {
-    foo <- function(x) sum(charToRaw(levels(x)[1]) %in% as.raw(c(47, 124))) + 1L
-    unlist(lapply(x[, attr(x, "locicol"), drop = FALSE], foo))
+## utility to check that all individuals have the same ploidy level for each locus:
+## outputs a vector with ploidy level if all individuals have the same, 0 otherwise
+.checkPloidy <- function(x)
+{
+    PLOIDY <- getPloidy(x)
+    ploidy <- integer(ncol(PLOIDY))
+    for (j in seq_along(ploidy)) {
+        tmp <- unique(PLOIDY[, j])
+        if (length(tmp) == 1) ploidy[j] <- tmp
+    }
+    ploidy
+}
+
+getPloidy <- function(x)
+{
+    foo <- function(x, n) {
+        class(x) <- NULL
+        res <- integer(n)
+        ploidyGENO <- nchar(gsub("[^|/]", "", levels(x))) + 1L
+        uniquePloidy <- unique(ploidyGENO)
+        if (length(uniquePloidy) == 1L) {
+            res[] <- uniquePloidy
+            return(res)
+        }
+        for (i in uniquePloidy) {
+            k <- which(ploidyGENO == i)
+            res[x %in% k] <- i
+        }
+        res
+    }
+    n <- nrow(x)
+    LOCI <- attr(x, "locicol")
+    p <- length(LOCI)
+    ans <- matrix(NA_integer_, n, p)
+    colnames(ans) <- names(x)[LOCI]
+    rownames(ans) <- row.names(x)
+    class(x) <- NULL
+    for (j in 1:p) ans[, j] <- foo(x[[LOCI[j]]], n)
+    ans
 }
 
 getAlleles <- function(x)
@@ -27,6 +63,27 @@ is.phased <- function(x)
         as.integer(x) %in% phased
     }
     sapply(x[, attr(x, "locicol")], foo)
+}
+
+unphase <- function(x)
+{
+    locale <- Sys.getlocale("LC_COLLATE")
+    if (!identical(locale, "C")) {
+        Sys.setlocale("LC_COLLATE", "C")
+        on.exit(Sys.setlocale("LC_COLLATE", locale))
+    }
+    foo <- function(x) {
+        f <- function(y) sort(strsplit(y, "|", fixed = TRUE)[[1]])
+        geno <- levels(x)
+        bar <- grep("|", geno, fixed = TRUE)
+        if (!length(bar)) return(x)
+        for (i in bar)
+            geno[i] <- paste(f(geno[i]), collapse = "/")
+        x <- geno[x]
+        factor(x)
+    }
+    for (i in attr(x, "locicol")) x[, i] <- foo(x[, i])
+    x
 }
 
 is.snp <- function(x) UseMethod("is.snp")
@@ -54,20 +111,23 @@ print.loci <- function(x, details = FALSE, ...)
 
 summary.loci <- function(object, ...)
 {
+    class(object) <- NULL
     L <- attr(object, "locicol")
     ans <- vector("list", length(L))
-    names(ans) <- names(object[L])
+    names(ans) <- names(object)[L]
     ii <- 1L
     for (i in L) {
-        geno <- levels(object[, i])
+        geno <- levels.default(object[[i]])
+        ng <- length(geno)
         alle <- strsplit(geno, "[/|]")
         unialle <- sort(unique(unlist(alle)))
-        l <- tabulate(object[, i], length(geno))
+        l <- tabulate(object[[i]], ng)
         names(l) <- geno
-        tab <- matrix(0, length(unialle), length(geno),
+        tab <- matrix(0L, length(unialle), ng,
                       dimnames = list(unialle, geno))
         for (j in seq_along(alle))
-            for (k in alle[[j]]) tab[k, j] <- tab[k, j] + 1
+            for (k in alle[[j]])
+                tab[k, j] <- tab[k, j] + 1L
         ans[[ii]] <- list(genotype = l, allele = drop(tab %*% l))
         ii <- ii + 1L
     }

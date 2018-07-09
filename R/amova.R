@@ -1,8 +1,8 @@
-## amova.R (2015-12-23)
+## amova.R (2018-07-07)
 
 ##   Analysis of Molecular Variance
 
-## Copyright 2010-2015 Emmanuel Paradis
+## Copyright 2010-2018 Emmanuel Paradis, 2018 Zhian N. Kamvar, 2018 Brian Knaus
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
@@ -32,6 +32,20 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
         stop("the lhs of the formula must be either a matrix or an object of class 'dist'.")
     n <- dim(y)[1] # number of individuals
     Nlv <- length(gr) # number of levels
+    ## reorder the observations so that they are arranged in hierarchical
+    ## blocks for the permutations (2018-05-14)
+    if (nperm) {
+        o <- do.call("order", gr)
+        gr <- gr[o, , drop = FALSE] # drop=FALSE in case there is a single level
+        if (Nlv > 1) {
+            f <- function(x) {
+                lp <- as.character(unique(x))
+                factor(match(as.character(x), lp))
+            }
+            for (i in 2:Nlv) gr[, i] <- f(gr[, i])
+        }
+        y <- y[o, o]
+    }
 
 ### 5 local functions
     ## a simplified version of tapply(X, INDEX, FUN = sum):
@@ -138,7 +152,7 @@ amova <- function(formula, data = NULL, nperm = 1000, is.squared = FALSE)
     class(res) <- "amova"
 
 ### Below, "pop" is used for the lowest level of the geo structure,
-### and "region" the one just above pop.
+### and "region" for the one just above pop.
     if (nperm) {
         rSigma2 <- matrix(0, nperm, length(sigma2)) # Note that length(sigma2) == Nlv + 1
         ## First shuffle all individuals among all pops to assess the
@@ -215,10 +229,85 @@ print.amova <- function(x, ...)
     print(x$tab)
     cat("\nVariance components:\n")
     if (is.data.frame(x$varcomp)) {
-        x$varcomp["Error", "P.value"] <- NA
         printCoefmat(x$varcomp, na.print = "")
-    } else print(x$varcomp)
+        sigma2 <- x$varcomp$sigma2
+    } else print(sigma2 <- x$varcomp)
+    ## formulas from Excoffier et al. (1992):
+    ##if (length(sigma2) == 3) {
+    ##    sigTot <- sum(sigma2)
+    ##    Phi <- c(sum(sigma2[-3])/sigTot,
+    ##             sigma2[1]/sigTot,
+    ##             sigma2[2]/sum(sigma2[-1]))
+    ##    names(Phi) <- paste("Phi", c("ST", "CT", "SC"), sep = "_")
+    ##    cat("\nPhi-statistics:\n")
+    ##    print(Phi)
+    ##}
+    nsig <- length(sigma2)
+    Phi <- numeric(0.5 * nsig * (nsig - 1))
+    nms <- character(0.5 * nsig * (nsig - 1))
+    lv <- row.names(x$tab)
+    k <- 1L
+    for (i in 1:(nsig - 1)) {
+        for (j in i:(nsig - 1)) {
+            Phi[k] <- sum(sigma2[i:j]) / sum(sigma2[i:nsig])
+            nms[k] <-
+                if (i == 1) paste0(lv[j], ".in.GLOBAL")
+                else paste0(lv[j], ".in.", lv[i - 1])
+            k <- k + 1L
+        }
+    }
+    names(Phi) <- nms
+    if (nsig == 3)
+        names(Phi) <- paste0(names(Phi), " (Phi_", c("CT", "ST", "SC"), ")")
+    cat("\nPhi-statistics:\n")
+    print(Phi)
     cat("\nVariance coefficients:\n")
     print(x$varcoef)
     cat("\n")
 }
+
+## This will take a named vector of sigma^2 values and return a data frame of
+## hierarchical Phi statistics.
+getPhi <- function(sigma2)
+{
+    nsig <- length(sigma2)
+    Phi <- numeric(0.5 * nsig * (nsig - 1))
+    nms <- character(0.5 * nsig * (nsig - 1))
+    lv <- if (is.null(names(sigma2))) paste("level", seq_along(sigma2)) else names(sigma2)
+    k <- 1L
+    mat <- matrix(NA_real_, nrow = nsig, ncol = nsig - 1)
+    colnames(mat) <- lv[seq(nsig - 1)]
+    rownames(mat) <- c("GLOBAL", lv[seq(nsig - 1)])
+    for (i in 1:(nsig - 1)) {
+        for (j in i:(nsig - 1)) {
+            Phi[k] <- sum(sigma2[i:j])/sum(sigma2[i:nsig])
+            mat[i, j] <- Phi[k]
+            k <- k + 1L
+        }
+    }
+    mat
+}
+
+
+write.pegas.amova <- function(x, file = ""){
+  if(class(x) != "amova"){
+    stop(paste("Expecting an object of class 'amova',  instead received:", class(x)))
+  }
+  if(file == ""){
+    stop("Please specify a filename.")
+  }
+  # Convert variances coefficients to a matrix with a 'Total' row.
+  if(length(x[[2]]) == 1){
+    x[[2]] <- c(x[[2]], '')
+  }
+  x[[2]] <- as.data.frame(as.matrix(x[[2]], ncol=1))
+  rownames(x[[2]]) <- rownames(x[[3]])
+  x[[2]]['Total', 1] <- c('')
+  colnames(x[[2]]) <- 'Variance coefficients'
+  # Convert variance components to a matrix with a 'Total' row.
+  x[[3]]['Total', 1:2] <- c('','')
+  x[[1]] <- cbind(x[[1]], x[[3]], x[[2]])
+  write.csv(x[[1]], file=file)
+}
+
+

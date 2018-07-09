@@ -6,14 +6,16 @@
 \alias{proba.genotype}
 \alias{is.snp}
 \alias{is.phased}
+\alias{unphase}
 \title{Utily Functions for pegas}
 \description{
   The first three functions extract information on loci,
   \code{expand.genotype} creates a table of all possible genotypes given
   a set of alleles, \code{proba.genotype} calculates expected
-  probabilities of genotypes under Hardy--Weinberg equilibrium, and the
-  last two functions test whether a locus is a SNP or whether a
-  gentotype is phased.
+  probabilities of genotypes under Hardy--Weinberg equilibrium,
+  \code{is.snp} tests whether a locus is a SNP, \code{is.phased} tests
+  whether a gentotype is phased, and \code{unphase} unphase phased
+  genotypes.
 }
 \usage{
 getPloidy(x)
@@ -23,6 +25,7 @@ expand.genotype(n, alleles = NULL, ploidy = 2, matrix = FALSE)
 proba.genotype(alleles = c("1", "2"), p, ploidy = 2)
 is.snp(x)
 is.phased(x)
+unphase(x)
 }
 \arguments{
   \item{x}{an object of class \code{"loci"}.}
@@ -45,8 +48,8 @@ is.phased(x)
   and 2, but not A and AT).
 }
 \value{
-  \code{getPloidy} returns the ploidy level of all loci in an object of
-  class \code{"loci"} as a numeric vector.
+  \code{getPloidy} returns the ploidy level of all genotypes as a matrix
+  of integers with rownames and colnames taken from \code{x}.
 
   \code{getAlleles} and \code{getGenotypes} return the alleles and
   genotypes, respectively, observed in all loci in an object of class
@@ -65,6 +68,9 @@ is.phased(x)
 
   \code{is.phased} returns a matrix of the same size than the original
   data specifying whether each genotype is phased or not.
+
+  \code{unphase} unphases the genotypes and eventually pools those that
+  become identical once unphased (e.g., A|T and T|A).
 }
 \author{Emmanuel Paradis}
 \examples{

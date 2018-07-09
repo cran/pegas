@@ -1,20 +1,24 @@
-## VCFloci.R (2016-07-20)
+## VCFloci.R (2018-03-12)
 
 ##   Handling VCF Files
 
-## Copyright 2015-2016 Emmanuel Paradis
+## Copyright 2015-2018 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
 
 .VCFconnection <- function(file)
 {
-    f <- if (length(grep("\\.gz$", file)))
-             gzcon(gzfile(file)) else file
-    x <- readChar(f, 16L, TRUE)
+    remote <- if (length(grep("^(ht|f)tp(s|):", file))) TRUE else FALSE
+    GZ <- if (length(grep("\\.gz$", file))) TRUE else FALSE
+    if (GZ) {
+        file <- if (remote) url(file) else gzfile(file)
+        file <- gzcon(file)
+    }
+    x <- readChar(file, 16L, TRUE)
     if (!identical(x, "##fileformat=VCF"))
         stop("file apparently not in VCF format")
-    f
+    file
 }
 
 .getMETAvcf <- function(x, position.only = FALSE)
@@ -110,8 +114,8 @@ VCFloci <- function(file, what = "all", chunck.size = 1e9, quiet = FALSE)
             x <- c(trail, Y[1:EOL[1L]])
             for (i in what) {
                 tmp <-
-                    if (i %in% c(2, 6)) .Call(extract_POS, x, c(1L, length(trail)), i - 1L)
-                    else .Call(extract_REF, x, c(1L, length(trail)), i - 1L)
+                    if (i %in% c(2, 6)) .Call(extract_POS, x, c(0L, length(trail)), i - 1L)
+                    else .Call(extract_REF, x, c(0L, length(trail)), i - 1L)
                 obj[[i]] <- c(obj[[i]], tmp)
             }
             ck <- ck + length(trail)

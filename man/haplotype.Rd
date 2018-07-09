@@ -2,6 +2,7 @@
 \alias{haplotype}
 \alias{haplotype.DNAbin}
 \alias{haplotype.character}
+\alias{haplotype.numeric}
 \alias{plot.haplotype}
 \alias{print.haplotype}
 \alias{plot.haplotype}
@@ -16,6 +17,7 @@
 haplotype(x, ...)
 \method{haplotype}{DNAbin}(x, labels = NULL, ...)
 \method{haplotype}{character}(x, labels = NULL, ...)
+\method{haplotype}{numeric}(x, labels = NULL, ...)
 \method{plot}{haplotype}(x, xlab = "Haplotype", ylab = "Number", ...)
 \method{print}{haplotype}(x, ...)
 \method{sort}{haplotype}(x,
@@ -76,6 +78,8 @@ x <- woodmouse[sample(15, size = 110, replace = TRUE), ]
 ## the indices of the individuals belonging to the 1st haplotype:
 attr(h, "index")[[1]]
 plot(sort(h))
+## get the frequencies in a named vector:
+setNames(lengths(attr(h, "index")), labels(h))
 }
 \keyword{manip}
 \keyword{hplot}
