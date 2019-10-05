@@ -1,8 +1,8 @@
-## haplotype.R (2018-07-07)
+## haplotype.R (2019-03-13)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
-## Copyright 2009-2018 Emmanuel Paradis, 2013 Klaus Schliep
+## Copyright 2009-2019 Emmanuel Paradis, 2013 Klaus Schliep
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
@@ -344,10 +344,12 @@ print.haploNet <- function(x, ...)
     xa1 <- xx[altlink[s, 2]]
     ya1 <- yy[altlink[s, 2]]
     segments(xa0, ya0, xa1, ya1, col = "grey", lty = 2)
-    if (show.mutation)
+    if (show.mutation) {
+        n <- length(xx)
         .labelSegmentsHaploNet(xx, yy, altlink[s, 1:2, drop = FALSE],
-                               altlink[s, 3, drop = FALSE], NULL, 1, NULL,
-                               show.mutation)
+                               altlink[s, 3, drop = FALSE], rep(1, n),
+                               1, "black", show.mutation)
+    }
 }
 
 .mutationRug <- function(x0, y0, x1, y1, n, space = 0.05, length = 0.2)
@@ -405,8 +407,8 @@ print.haploNet <- function(x, ...)
             pc <- ((1:ld1[i]) / (ld1[i] + 1) * ld2[i] + size[l1[i]]/2) / (ld2[i] + (size[l1[i]] + size[l2[i]])/2)
             xr <- pc * (xx[l2[i]] - xx[l1[i]]) +  xx[l1[i]]
             yr <- pc * (yy[l2[i]] - yy[l1[i]]) +  yy[l1[i]]
-            symbols(xr, yr, circles = rep(lwd/15, length(xr)), inches = FALSE, add = TRUE,
-                    fg = col.link, bg = col.link)
+            symbols(xr, yr, circles = rep(lwd/15, length(xr)), inches = FALSE,
+                    add = TRUE, fg = col.link, bg = col.link)
         }
     }, {
         x <- (xx[l1] + xx[l2])/2
@@ -473,7 +475,7 @@ replot <- function(xy = NULL, ...)
         if (show.mutation)
             .labelSegmentsHaploNet(xx, yy, cbind(l1, l2), step, size, lwd,
                                    col.link, as.numeric(show.mutation))
-        if (!is.null(altlink) && !identical(threshold, 0))
+        if (!is.null(altlink) && !identical(as.numeric(threshold), 0))
             .drawAlternativeLinks(xx, yy, altlink, threshold, show.mutation)
         .drawSymbolsHaploNet(xx, yy, size, col, bg, pie)
         if (is.character(labels))
@@ -688,7 +690,7 @@ plot.haploNet <-
 
     ## draw alternative links
     altlink <- attr(x, "alter.links")
-    if (!is.null(altlink) && !identical(threshold, 0))
+    if (!is.null(altlink) && !identical(as.numeric(threshold), 0))
         .drawAlternativeLinks(xx, yy, altlink, threshold, show.mutation)
 
     if (show.mutation) {
@@ -767,6 +769,7 @@ subset.haplotype <- function(x, minfreq = 1, maxfreq = Inf, maxna = Inf,
                              na = c("N", "?"), ...)
 {
     oc <- oldClass(x)
+    from <- attr(x, "from")
     idx <- attr(x, "index")
     f <- sapply(idx, length)
     s <- f <= maxfreq & f >= minfreq
@@ -784,19 +787,30 @@ subset.haplotype <- function(x, minfreq = 1, maxfreq = Inf, maxna = Inf,
     x <- x[s, ]
     attr(x, "index") <- idx[s]
     class(x) <- oc
+    attr(x, "from") <- from
     x
+}
+
+summary.haplotype <- function(object, ...)
+{
+    res <- sapply(attr(object, "index"), length)
+    names(res) <- rownames(object)
+    res
 }
 
 print.haplotype <- function(x, ...)
 {
-    d <- dim(x)
-    DF <- sapply(attr(x, "index"), length)
-    names(DF) <- rownames(x)
+    n <- (d <- dim(x))[1]
+    DF <- summary.haplotype(x)
     cat("\nHaplotypes extracted from:", attr(x, "from"), "\n\n")
-    cat("    Number of haplotypes:", d[1], "\n")
+    cat("    Number of haplotypes:", n, "\n")
     cat("         Sequence length:", d[2], "\n\n")
     cat("Haplotype labels and frequencies:\n\n")
-    print(DF)
+    if (n <= 40) print(DF)
+    else {
+        print(DF[1:40])
+        cat("...\n(use summary() to print all)\n")
+    }
 }
 
 "[.haplotype" <- function(x, ...)
@@ -804,6 +818,68 @@ print.haplotype <- function(x, ...)
     y <- NextMethod("[")
     class(y) <- "DNAbin"
     y
+}
+
+as.phylo.haploNet <- function(x, quiet = FALSE, ...)
+{
+    if (!is.null(attr(x, "alter.links")) && !quiet)
+        warning("some links (edges) were dropped because of reticulations")
+
+    foo <- function(xx) {
+        NODES <<- c(NODES, xx)
+        W <- which(mat == xx, TRUE)
+        for (i in 1:nrow(W)) {
+            k <- W[i, 1]
+            if (DONE[k]) next
+            DONE[k] <<- TRUE
+            link <- mat[k, ]
+            if (link[1] != xx) link <- rev(link)
+            edge[ie, ] <<- link
+            el[ie] <<- x[k, 3]
+            ie  <<- ie + 1L
+            neigh <- link[2]
+            if (deg[neigh] == 1L) TIPS <<- c(TIPS, neigh) else foo(neigh)
+        }
+    }
+
+    LABS <- attr(x, "labels")
+    n <- length(LABS) # number of haplotype nodes
+    mat <- x[, 1:2]
+    deg <- tabulate(mat, n) # get the degree of each node
+    deg1 <- deg == 1
+    ntip <- sum(deg1)
+
+    TIPS <- integer()
+    NODES <- integer()
+    edge <- mat
+    edge[] <- 0L
+    el <- numeric(nrow(mat))
+    ie <- 1L
+    DONE <- logical(nrow(mat))
+    ROOT <- which(!deg1)[1]
+    foo(ROOT)
+    TIPNODE <- c(TIPS, NODES)
+    edge <- match(edge, TIPNODE)
+    dim(edge) <- dim(mat)
+    phy <- list(edge = edge, edge.length = el, tip.label = LABS[TIPS],
+                Nnode = length(NODES), node.label = LABS[NODES])
+    class(phy) <- "phylo"
+    phy
+}
+
+as.evonet.haploNet <- function(x, ...)
+{
+    res <- as.phylo.haploNet(x, quiet = TRUE)
+    alt <- attr(x, "alter.links")
+    if (!is.null(alt)) {
+        LABS <- attr(x, "labels")
+        o <- match(LABS, c(res$tip.label, res$node.label))
+        alt <- o[alt[, 1:2]]
+        dim(alt) <- c(length(alt)/2, 2)
+        res$reticulation <- alt
+        class(res) <- c("evonet", "phylo")
+    }
+    res
 }
 
 if (getRversion() >= "2.15.1") utils::globalVariables(c("network", "network.vertex.names<-"))
@@ -959,7 +1035,7 @@ LD <- function(x, locus = c(1, 2), details = TRUE)
 {
     if (length(locus) != 2)
         stop("you must specify two loci to compute linkage disequilibrium")
-    hap <- haplotype.loci(x, locus = locus)
+    hap <- haplotype.loci(x, locus = locus, quiet = TRUE)
     alleles1 <- unique(hap[1, ])
     alleles2 <- unique(hap[2, ])
     k <- length(alleles1)
@@ -1019,8 +1095,8 @@ LD2 <- function(x, locus = c(1, 2), details = TRUE)
 
     Delta <- r <- numeric()
 
-    x1 <- as.integer(x[, 1L])
-    x2 <- as.integer(x[, 2L])
+    x1 <- as.integer(x[, 1L, drop = TRUE])
+    x2 <- as.integer(x[, 2L, drop = TRUE])
 
     for (a in alleles1) {
         Pa <- P[[1]][a]
@@ -1076,24 +1152,25 @@ LD2 <- function(x, locus = c(1, 2), details = TRUE)
     res
 }
 
-LDscan <- function(x, quiet = FALSE)
+LDscan <- function(x, ...) UseMethod("LDscan")
+
+LDscan.DNAbin <- function(x, quiet = FALSE, ...)
 {
-    nloci <- ncol(x)
-    hap <- haplotype.loci(x, seq_len(nloci), TRUE, FALSE)
-    .LD <- function (x, loc1, loc2) {
+    if (!quiet) cat("Scanning haplotypes... ")
+    ss <- seg.sites(x)
+    nloci <- length(ss)
+    hap <- t(as.character(x[, ss]))
+    hap[hap == "n"] <- NA_character_
+    if (!quiet) cat("done.\n")
+    .LD <- function (hap, loc1, loc2) {
         nij <- table(hap[loc1, ], hap[loc2, ])
+        if (any(dim(nij) != 2)) return(NA_real_)
         N <- sum(nij)
         pij <- nij/N
-        pi <- rowSums(pij)
-        qj <- colSums(pij)
-        eij <- pi %o% qj * N
-        pi <- rep(pi, ncol(pij))
-        qj <- rep(qj, each = nrow(pij))
+        pi <- rep(rowSums(pij), 2)
+        qj <- rep(colSums(pij), each = 2)
         D <- pij - pi * qj
         rij <- D/sqrt(pi * (1 - pi) * qj * (1 - qj))
-        ## df <- (k - 1) * (m - 1)
-        ## T2 <- df * N * sum(rij^2)/(k * m)
-        ## res <- c(T2 = T2, df = df, `P-val` = pchisq(T2, df, lower.tail = FALSE))
         abs(rij[1])
     }
     M <- nloci * (nloci - 1) / 2
@@ -1102,16 +1179,70 @@ LDscan <- function(x, quiet = FALSE)
     for (i in 1:(nloci - 1)) {
         for (j in (i + 1):nloci) {
             k <- k + 1L
-            ldx[k] <- .LD(x, i, j)
+            ldx[k] <- .LD(hap, i, j)
             if (!quiet) cat("\r", round(100 * k / M), "%")
         }
     }
-    cat("\n")
+    if (!quiet) cat("\n")
     class(ldx) <- "dist"
     attr(ldx, "Size") <- nloci
     attr(ldx, "Labels") <- names(x)
     attr(ldx, "Diag") <- attr(ldx, "Upper") <- FALSE
     attr(ldx, "call") <- match.call()
+    ldx
+}
+
+LDscan.loci <- function(x, depth = NULL, quiet = FALSE, ...)
+{
+    nloci <- length(attr(x, "locicol"))
+    if (!quiet) cat("Scanning haplotypes... ")
+    hap <- haplotype.loci(x, seq_len(nloci), TRUE, FALSE, FALSE)
+    if (!quiet) cat("done.\n")
+    .LD <- function (hap, loc1, loc2) {
+        nij <- table(hap[loc1, ], hap[loc2, ])
+        N <- sum(nij)
+        pij <- nij/N
+        pi <- rep(rowSums(pij), 2)
+        qj <- rep(colSums(pij), each = 2)
+        D <- pij - pi * qj
+        rij <- D/sqrt(pi * (1 - pi) * qj * (1 - qj))
+        abs(rij[1])
+    }
+    if (is.null(depth)) {
+        M <- nloci * (nloci - 1) / 2
+        ldx <- numeric(M)
+        k <- 0L
+        for (i in 1:(nloci - 1)) {
+            for (j in (i + 1):nloci) {
+                k <- k + 1L
+                ldx[k] <- .LD(hap, i, j)
+                if (!quiet) cat("\r", round(100 * k / M), "%")
+            }
+        }
+        if (!quiet) cat("\n")
+        class(ldx) <- "dist"
+        attr(ldx, "Size") <- nloci
+        attr(ldx, "Labels") <- names(x)
+        attr(ldx, "Diag") <- attr(ldx, "Upper") <- FALSE
+        attr(ldx, "call") <- match.call()
+    } else {
+        depth <- as.integer(depth)
+        ldx <- vector("list", length(depth))
+        k <- 0L
+        for (o in depth) {
+            vec <- numeric(nloci - o)
+            j <- 0L
+            for (i in 1:(nloci - o)) {
+                j <- j + 1L
+                vec[j] <- .LD(hap, i, i + o)
+                if (!quiet) cat("\rScanning at depth", o, ":\t", round(100 * j / (nloci - o)), "%")
+            }
+            if (!quiet) cat("\n")
+            k <- k + 1L
+            ldx[[k]] <- vec
+        }
+        names(ldx) <- depth
+    }
     ldx
 }
 
@@ -1128,7 +1259,8 @@ LDmap <- function(d, POS = NULL, breaks = NULL, col = NULL, border = NA,
     m <- nloci * n /2
     nl <- if (is.null(col)) 10 else length(col) # Nb of colour levels
     if (is.null(breaks)) {
-        breaks <- seq(min(d), max(d), length.out = nl + 1)
+        rgd <- range(d, na.rm = TRUE)
+        breaks <- seq(rgd[1], rgd[2], length.out = nl + 1)
     } else {
         nl <- length(breaks) - 1
         if (!is.null(col))
@@ -1209,8 +1341,8 @@ LDmap <- function(d, POS = NULL, breaks = NULL, col = NULL, border = NA,
 
 all.equal.haploNet <- function(target, current, use.steps = TRUE, ...)
 {
-    nt1 <- deparse(substitute(target))
-    nt2 <- deparse(substitute(current))
+    nt1 <- sQuote(deparse(substitute(target)))
+    nt2 <- sQuote(deparse(substitute(current)))
     if (identical(target, current)) return(TRUE)
     ## function to build a list to make comparisons easier
     foo <- function(x) {
@@ -1228,7 +1360,7 @@ all.equal.haploNet <- function(target, current, use.steps = TRUE, ...)
     }
     ## function to arrange print of links:
     bar <- function(x) gsub("\r", "--", x)
-    ## another one to print comparison of link lenghts:
+    ## another one to print comparison of link lengths:
     bar2 <- function(x, y, z) paste0(bar(x), " (", y, ", ", z, ")")
 
     msg <- NULL
@@ -1271,7 +1403,7 @@ all.equal.haploNet <- function(target, current, use.steps = TRUE, ...)
                          bar2(links1[test], X1$step[test], tmp[test]))
         }
     } else {
-        msg <- c(msg, "Number of links different")
+        msg <- c(msg, "Number of links different.")
         comp21 <- match(links2, links1)
         if (anyNA(comp12))
             msg <- c(msg, paste0("Links in ", nt1, " not in ", nt2, ":"),
@@ -1280,8 +1412,13 @@ all.equal.haploNet <- function(target, current, use.steps = TRUE, ...)
             msg <- c(msg, paste0("Links in ", nt2, " not in ", nt1, ":"),
                      bar(links2[is.na(comp21)]))
         if (use.steps) {
-            tmp1 <- X1$step[!is.na(comp12)]
-            tmp2 <- X2$step[comp12]
+            if (length(links1) > length(links2)) {
+                tmp1 <- X1$step[!is.na(comp12)]
+                tmp2 <- X2$step[comp21]
+            } else {
+                tmp1 <- X1$step[comp12]
+                tmp2 <- X2$step[!is.na(comp21)]
+            }
             test <- tmp1 != tmp2
             if (any(test))
                 msg <- c(msg,

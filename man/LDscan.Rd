@@ -1,5 +1,7 @@
 \name{LDscan}
 \alias{LDscan}
+\alias{LDscan.DNAbin}
+\alias{LDscan.loci}
 \alias{LDmap}
 \title{Multi-Locus Linkage Disequilibrium}
 \description{
@@ -12,12 +14,19 @@
   positions of the loci.
 }
 \usage{
-LDscan(x, quiet = FALSE)
+LDscan(x, ...)
+
+\method{LDscan}{DNAbin}(x, quiet = FALSE, ...)
+\method{LDscan}{loci}(x, depth = NULL, quiet = FALSE, ...)
+
 LDmap(d, POS = NULL, breaks = NULL, col = NULL, border = NA,
       angle = 0, asp = 1, cex = 1, scale.legend = 0.8, ...)
 }
 \arguments{
   \item{x}{an object of class \code{"loci"} with phased genotypes.}
+  \item{depth}{a vector of integers giving the the depth(s) (or lags) at
+    which the \eqn{r^2}'s are calculated. By default, all possible
+    depths are considered.}
   \item{quiet}{a logical: should the progress of the operation be
     printed?}
   \item{d}{a correlation matrix (can be an object of class \code{"dist"}).}
@@ -35,7 +44,8 @@ LDmap(d, POS = NULL, breaks = NULL, col = NULL, border = NA,
     elements are squares (not rectangles).}
   \item{cex}{the scaling of the labels and text.}
   \item{scale.legend}{the scaling of the legend rectangles.}
-  \item{\dots}{further arguments passed to \code{plot.default}.}
+  \item{\dots}{further arguments passed to methods (\code{LDscan}) or to
+    \code{plot.default} (\code{LDmap}).}
 }
 \details{
   The LD coefficient \eqn{r^2} is well defined when the two loci have
@@ -44,13 +54,23 @@ LDmap(d, POS = NULL, breaks = NULL, col = NULL, border = NA,
 
   All levels of ploidy are accepted, but all loci should have the same
   ploidy level.
+
+  If \code{depth} is used, the \eqn{r^2}'s are calculated only for the
+  pairs of loci that are distant by these values in \code{x}, but
+  necessarily on the chromosome. The returned list has names set with
+  the values of \code{depth}.
 }
 \value{
-  an object of class \code{"dist"} for \code{LDscan}.
+  \code{LDscan} returns an object of class \code{"dist"} by default, or
+  a list if \code{depth} is used.
 }
 \author{Emmanuel Paradis}
 \seealso{\code{\link{LD}}, \code{\link{read.vcf}}}
 \examples{
+data(woodmouse)
+d <- LDscan(woodmouse)
+LDmap(d, seg.sites(woodmouse), seq(0, 1, .1))
+
 \dontrun{
 ## Download the VCF file from Dryad:
 ## http://dx.doi.org/10.5061/dryad.446sv.2

@@ -1,8 +1,8 @@
-## hw.test.R (2017-11-21)
+## hw.test.R (2018-08-17)
 
 ##   Test of Hardy--Weinberg Equilibrium
 
-## Copyright 2009-2017 Emmanuel Paradis, 2015 Thibaut Jombart
+## Copyright 2009-2018 Emmanuel Paradis, 2015 Thibaut Jombart
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
@@ -80,9 +80,8 @@ hw.test.loci <- function(x, B = 1000, ...)
     y <- summary.loci(x)
     ploidy <- .checkPloidy(x) # see summary.loci.R
     if (any(del <- !ploidy)) {
-        msg <- paste("The following loci were dropped (not the same ploidy for all individuals):",
-                     names(y)[del], sep = "\n")
-        y <- y[!del]
+        msg <- if (sum(del) == 1) "The following locus was ignored: " else "The following loci were ignored: "
+        msg <- paste(msg, names(y)[del], "\n(not the same ploidy for all individuals, or too many missing data)", sep = "")
         warning(msg)
     }
     ans <- t(mapply(test.polyploid, y, ploidy = ploidy))
@@ -92,7 +91,7 @@ hw.test.loci <- function(x, B = 1000, ...)
         test.mc <- function(x, ploidy) {
             ## accept only diploids for the moment
             if (ploidy != 2) {
-                warning("no Monte Carlo test available for polyploids")
+                warning("Monte Carlo test available only if all individuals are diploid")
                 return(NA_real_)
             }
             n <- sum(x$genotype) # Nb of individuals

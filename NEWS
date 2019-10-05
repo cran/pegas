@@ -1,4 +1,104 @@
-		CHANGES IN PEGAS VERSION 0.10-6
+		CHANGES IN PEGAS VERSION 0.11-14
+
+
+NEW FEATURES
+
+    o The new functions F2, F3, and F4 implement the F-statistics
+      developed by Patterson et al. (2012, Genetics, 192:1065).
+
+    o The new function stairway implements the method from Polanski
+      and Kimmel (2003, Genetics, 165:427) quantifying changes in
+      population size from the site frequency spectrum (SFS). There are
+      plot() and lines() method.
+
+    o The new function loci2alleles does the reverse operation than
+      alleles2loci().
+
+    o The new function theta.tree.hetero estimates THETA from a
+      non-ultrametric coalescent tree.
+
+    o The new function Rst computes the R_ST index for microsatellites.
+
+    o The new function loci2SnpMatrix converts SNPs from a "loci"
+      object into the S4 class "SnpMatrix" of the BioConductor package
+      snpStats.
+
+    o The three new functions allelicrichness, rarefactionplot, and
+      rhost analyse allelic richness with various methods.
+
+    o There is a new default method sw() which can use genomic
+      positions. sw() now returns an object of class "sw" for which
+      there is a plot() method.
+
+    o There are two new methods as.phylo() and as.evonet() for the
+      class "haploNet".
+
+    o site.spectrum() is now generic with methods for "DNAbin" (old
+      code) and for "loci" (new code). The returned object now has an
+      attribute "sample.size" (useful for folded spectra).
+
+    o There is a new summary() method for the class "haplotype" to
+      extract haplotype absolute frequencies.
+
+    o There is a new by() method for the class "loci" that by default
+      computes allele frequencies by population.
+
+    o H() is now generic with a default method (with the old code) and
+      a "loci" method.
+
+    o Fst() has the new option 'na.alleles' ("" by default) to specify
+      alleles coding for missing data.
+
+    o LDscan() is now generic with methods for classes "DNAbin" (new
+      code) and "loci" (old code). The latter has a new option, depth,
+      to specify at what depth(s) (or lags) to compute r^2 values.
+
+
+BUG FIXES
+
+    o loci2genind() dropped row and column labels when converting an
+      object with a single locus.
+
+    o The 'dimnames' were not set correctly in sw().
+
+    o all.equal.haploNet() failed depending on the order of the
+      arguments.
+
+    o hw.test() failed if some loci were ignored.
+
+    o plotNetMDS(, k = 2) did not display the x-axis.
+
+    o A bug was fixed in theta.tree() which multiplied the estimates
+      of THETA by two.
+
+    o LDmap() failed if there were NA's in the output from LDscan().
+
+    o plot.haploNet(, show.mutation = 2) failed if the network had
+      reticulations.
+
+    o alleles2loci(, ploidy = 1) failed.
+
+    o H.loci() did not use the correct values of 'n' (number of
+      alleles; number of individuals was used before).
+
+
+OTHER CHANGES
+
+    o summary.loci() is around 4 times faster.
+
+    o dist.snp() will be removed in the next release: its code has
+      been incorporated in dist.asd(), and it now gives a warning.
+
+    o The default of x[, 1] is now drop = FALSE for "loci" objects.
+
+    o print.haplotype() now prints only the first 40 haplotype labels
+      and frequencies (see the new summary.haplotype() above).
+
+    o The BioConductor package snpStats is now suggested.
+
+
+
+		CHANGES IN PEGAS VERSION 0.11
 
 
 NEW FEATURES

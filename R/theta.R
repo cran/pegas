@@ -1,4 +1,4 @@
-## theta.R (2015-10-27)
+## theta.R (2019-01-13)
 
 ##   Population Parameter THETA
 
@@ -6,9 +6,10 @@
 ## theta.k: using expected number of alleles
 ## theta.s: using segregating sites in DNA sequences
 ## theta.tree: using a genealogy
+## theta.tree.hetero: using a genealogy with heterochronous dates
 ## theta.msat: using micro-satellites
 
-## Copyright 2002-2015 Emmanuel Paradis
+## Copyright 2002-2018 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
@@ -72,12 +73,12 @@ theta.s.DNAbin <- function(x, variance = FALSE, ...)
 theta.tree <-
     function(phy, theta, fixed = FALSE, analytical = TRUE, log = TRUE)
 {
-    ## coalescent intervals from the oldest to most recent one:
-    x <- rev(diff(c(0, sort(branching.times(phy)))))
-    k <- 2:length(phy$tip.label)
-    K <- length(k)
-    tmp <- choose(k, 2)
-    tmp2 <- 2 * sum(x * tmp)
+    ## coalescent intervals from the most recent to the oldest one:
+    x <- diff(c(0, sort(branching.times(phy))))
+    k <- length(phy$tip.label):2 # c(n, ..., 2)
+    K <- length(k) # n - 1
+    tmp <- (k * (k - 1))/2 # choose(k, 2)
+    tmp2 <- sum(x * tmp)
     sltmp <- sum(log(tmp))
     if (fixed) {
         res <- sltmp - K * log(theta) - tmp2/theta
@@ -106,6 +107,34 @@ theta.tree <-
 ### I prefered nlminb() because it is slightly faster and in most cases
 ### the hessian-based estimate of SE(theta) are not needed
     res
+}
+
+theta.tree.hetero <- function(phy, theta, fixed = FALSE, log = TRUE)
+{
+    n <- length(phy$tip.label)
+    ROOT <- n + 1L
+    times <- dist.nodes(phy)[, ROOT]
+    ## rescale so the most recent sample has t=0 and the root has t=max(t):
+    times <- max(times) - times
+    o <- order(times)
+    isSamp <- o <= n
+    isCoal <- !isSamp
+    trans <- as.integer(isSamp)
+    trans[isCoal] <- -1L
+    x <- cumsum(trans)
+    coal.times <- c(0, times[o][isCoal]) # sorted
+    x.coal <- x[which(isCoal) - 1] # number of lineages before the coalescence
+    coal.ints <- diff(coal.times)
+    tmp <- x.coal * (x.coal - 1)/2
+    if (fixed) {
+        res <- sum(lchoose(x.coal, 2) - log(theta) - tmp * coal.ints/theta)
+        if (log) res else exp(res)
+    } else {
+        theta <- sum(tmp * coal.ints)/(n - 1)
+        se <- sqrt(-1/((n - 1)/theta^2 - 2 * sum(tmp * coal.ints)/theta^3))
+        logLik <- sum(lchoose(x.coal, 2) - log(theta) - tmp * coal.ints/theta)
+        list(theta = theta, se = se, logLik = logLik)
+    }
 }
 
 theta.msat <- function(x)

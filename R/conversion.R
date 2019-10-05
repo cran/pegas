@@ -1,16 +1,65 @@
-## conversion.R (2017-12-17)
+## conversion.R (2019-10-03)
 
 ##   Conversion Among Allelic Data Classes
 
-## Copyright 2009-2017 Emmanuel Paradis
+## Copyright 2009-2019 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
 
+loci2SnpMatrix <- function(x, checkSNP = TRUE)
+{
+    LOCI <- attr(x, "locicol")
+    p <- length(LOCI)
+    n <- nrow(x)
+    if (checkSNP) {
+        SNP <- is.snp(x)
+        nonSNP <- !SNP
+        NnonSNP <- sum(nonSNP)
+        if (NnonSNP == p) {
+            warning("no SNP found: returning NULL")
+            return(NULL)
+        }
+        if (NnonSNP) {
+            msg <- ifelse(NnonSNP == 1, "locus is not SNP: it was dropped",
+                          "loci are not SNPs: they were dropped")
+            warning(paste(NnonSNP, msg))
+            LOCI <- LOCI[SNP]
+            p <- length(LOCI)
+        }
+    }
+
+    res <- matrix(as.raw(0), n, p)
+    rownames(res) <- row.names(x)
+    colnames(res) <- names(x)[LOCI]
+    class(x) <- NULL
+    for (j in 1:p) {
+        y <- x[[LOCI[j]]]
+        geno <- levels(y)
+        ngeno <- length(geno)
+        map <- integer(ngeno)
+        ## take arbitrarily the first allele as the REF allele:
+        REF <- charToRaw(geno[1])[1]
+        for (i in 1:ngeno) {
+            tmp <- charToRaw(geno[i])
+            a1 <- tmp[1]
+            a2 <- tmp[3]
+            if (a1 != a2) {
+                map[i] <- 2L
+            } else {
+                map[i] <- if (a1 == REF) 1L else 3L
+            }
+        }
+        res[, j] <- as.raw(map[y])
+    }
+    requireNamespace("snpStats")
+    new("SnpMatrix", res)
+}
+
 loci2genind <- function(x, ploidy = 2, na.alleles = c("0", "."), unphase = TRUE)
 {
     ipop <- which(names(x) == "population")
-    pop <- if (length(ipop)) x[, ipop] else NULL
+    pop <- if (length(ipop)) x[[ipop]] else NULL
 
     if (unphase) x <- unphase(x)
 
@@ -27,15 +76,15 @@ loci2genind <- function(x, ploidy = 2, na.alleles = c("0", "."), unphase = TRUE)
         x[[i]] <- z
     }
 
-    df2genind(as.matrix(x[, attr(x, "locicol")]), sep = "/",
-              pop = pop, ploidy = ploidy)
+    adegenet::df2genind(as.matrix(x[, attr(x, "locicol"), drop = FALSE]),
+                        sep = "/", pop = pop, ploidy = ploidy)
 }
 
 as.loci <- function(x, ...) UseMethod("as.loci")
 
 as.loci.genind <- function(x, ...)
 {
-    obj <- genind2df(x, sep = "/")
+    obj <- adegenet::genind2df(x, sep = "/")
     icol <- 1:ncol(obj)
     pop <- which(names(obj) == "pop")
     if (length(pop)) {
@@ -65,28 +114,45 @@ genind2loci <- function(x) as.loci.genind(x)
 
 .check.order.alleles <- function(x)
 {
+    locale <- Sys.getlocale("LC_COLLATE")
+    if (!identical(locale, "C")) {
+        Sys.setlocale("LC_COLLATE", "C")
+        on.exit(Sys.setlocale("LC_COLLATE", locale))
+    }
+
     reorder.alleles <- function(x) {
+        ALLOK <- TRUE
         for (i in seq_along(x)) {
             y <- x[i]
             if (!length(grep("/", y))) next # phased genotype (mixed with unphased ones)
-            y <- unlist(strsplit(y, "/"))
-            y <- paste(.sort.alleles(y), collapse = "/")
-            x[i] <- y
+            y <- strsplit(y, "/")[[1L]]
+            z <- paste0(y[sort.list(y)], collapse = "/")
+            if (!identical(y, z)) {
+                ALLOK <- FALSE
+                x[i] <- z
+            }
         }
+        if (ALLOK) return(ALLOK)
         x
     }
 
-    for (k in attr(x, "locicol")) {
-        y <- x[, k]
+    LOCI <- attr(x, "locicol")
+    if (is.null(LOCI)) return(x)
+    oc <- oldClass(x)
+    class(x) <- NULL
+
+    for (k in LOCI) {
+        y <- x[[k]]
         if (is.numeric(y)) { # haploid with alleles coded with numerics
-            x[, k] <- factor(y)
+            x[[k]] <- factor(y)
             next
         }
-        lv <- levels(y)
+        lv <- levels(y) # get the genotypes of the k-th genotype
         if (!length(grep("/", lv))) next # if haploid or phased genotype
         a <- reorder.alleles(lv) # works with all levels of ploidy > 1
-        if (!identical(a, lv)) levels(x[, k]) <- a
+        if (!is.logical(a)) x[[k]] <- factor(a[as.numeric(y)])
     }
+    class(x) <- oc
     x
 }
 
@@ -134,7 +200,7 @@ alleles2loci <- function(x, ploidy = 2, rownames = NULL, population = NULL,
     x <- as.data.frame(x)
     if (is.null(rownames)) {
         idx <- rownames(x)
-        if (is.null(idx)) idx <- as.character(seq_len(d[1]))
+        if (is.null(idx)) idx <- as.character(seq_len(nrow(x)))
     } else {
         idx <- as.character(x[[rownames]])
         x[[rownames]] <- NULL
@@ -143,24 +209,49 @@ alleles2loci <- function(x, ploidy = 2, rownames = NULL, population = NULL,
     }
     if (withPop) {
         pop <- x[, population]
-        x <- x[, -population]
+        x <- x[, -population, drop = FALSE]
     }
-    d <- dim(x)
-    if (d[2] %% ploidy) stop("number of columns not a multiple of ploidy")
-    nloci <- d[2] / ploidy
-    start <- seq(1, by = ploidy, length.out = nloci)
-    end <- start + ploidy - 1
-    loci.nms <- colnames(x)[start]
-    obj <- vector("list", nloci)
-    sep <- if (phased) "|" else "/"
-    foo <- function(...) paste(..., sep = sep)
-    for (i in seq_len(nloci))
-        obj[[i]] <- factor(do.call(foo, x[, start[i]:end[i]]))
+    p <- ncol(x)
+    if (ploidy == 1) {
+        loci.nms <- colnames(x)
+        obj <- vector("list", p)
+        for (i in 1:p) obj[[i]] <- factor(x[, i])
+    } else {
+        if (p %% ploidy) stop("number of columns not a multiple of ploidy")
+        nloci <- p / ploidy
+        start <- seq(1, by = ploidy, length.out = nloci)
+        end <- start + ploidy - 1
+        loci.nms <- colnames(x)[start]
+        obj <- vector("list", nloci)
+        sep <- if (phased) "|" else "/"
+        foo <- function(...) paste(..., sep = sep)
+        for (i in seq_len(nloci))
+            obj[[i]] <- factor(do.call(foo, x[, start[i]:end[i], drop = FALSE]))
+    }
     names(obj) <- loci.nms
     obj <- as.data.frame(obj, row.names = idx)
     obj <- as.loci(obj)
     if (withPop) obj$population <- factor(pop)
     obj
+}
+
+loci2alleles <- function(x)
+{
+    ploidy <- .checkPloidy(x)
+    if (any(ploidy == 0)) stop("ploidy not homogeneous within some loci")
+    n <- nrow(x)
+    LOCI <- attr(x, "locicol")
+    x <- x[, LOCI]
+    fl <- tempfile()
+    on.exit(unlink(fl))
+    write.loci(x, fl, allele.sep = " ", quote = FALSE,
+               row.names = FALSE, col.names = FALSE)
+    res <- scan(fl, what = "", quiet = TRUE)
+    res <- matrix(res, n, length(res)/n, byrow = TRUE)
+    rownames(res) <- rownames(x)
+    colnames(res) <- paste(unlist(mapply(rep, colnames(x), each = ploidy)),
+                           unlist(mapply(":", 1, ploidy)), sep = ".")
+    res
 }
 
 na.omit.loci <- function(object, na.alleles = c("0", "."), ...)

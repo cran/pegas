@@ -1,18 +1,20 @@
-## site.spectrum.R (2014-01-22)
+## site.spectrum.R (2019-01-15)
 
 ##   Site Frequency Spectrum
 
-## Copyright 2009-2014 Emmanuel Paradis
+## Copyright 2009-2019 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
 
-site.spectrum <- function(x, folded = TRUE, outgroup = 1)
+site.spectrum <- function(x, ...) UseMethod("site.spectrum")
+
+site.spectrum.DNAbin <- function(x, folded = TRUE, outgroup = 1, ...)
 {
     if (is.list(x)) x <- as.matrix(x)
     n <- dim(x)[1]
-    if (n == 1 || is.vector(x))
-        stop("only one sequence in the data set")
+    if (n == 1 || is.null(n))
+        stop("only one sequence in data set")
 
     ss <- seg.sites(x)
 
@@ -40,9 +42,10 @@ site.spectrum <- function(x, folded = TRUE, outgroup = 1)
             ss <- ss[outgroup.state]
         }
         spectrum <- apply(x[, ss], 2, function(y) sum(y[outgroup] != y[-outgroup]))
-        spectrum <- tabulate(spectrum, nrow(x) - 1)
+        spectrum <- tabulate(spectrum, n - 1)
     }
     class(spectrum) <- "spectrum"
+    attr(spectrum, "sample.size") <- n
     attr(spectrum, "folded") <- folded
     spectrum
 }
@@ -55,4 +58,39 @@ plot.spectrum <- function(x, col = "red", main = NULL, ...)
     }
 
     barplot(as.numeric(x), names.arg = 1:length(x), col = col, main = main, ...)
+}
+
+site.spectrum.loci <- function(x, folded = TRUE, ancestral = NULL, ...)
+{
+    nonsnp <- !is.snp(x)
+    p <- length(nonsnp)
+    if (!folded) {
+        if (is.null(ancestral))
+            stop("need a vector of ancestral alleles to compute the unfolded spectrum")
+        if (length(ancestral) != p)
+            stop("length of 'ancestral' not equal to number of loci")
+    }
+    if (any(nonsnp)) {
+        if (all(nonsnp)) stop("no SNP loci in data set")
+        d <- attr(x, "locicol")[nonsnp]
+        ld <- length(d)
+        x <- x[, -d]
+        warning(paste(ld, "non-SNP loci were dropped"))
+        p <- p - ld
+        if (!folded) ancestral <- ancestral[-d]
+    }
+    n <- nrow(x)
+    s <- summary(x) # works in all situations
+    if (folded) {
+        f <- sapply(s, function(x) min(x[[2]]), USE.NAMES = FALSE)
+        res <- tabulate(f, floor(n/2))
+    } else {
+        f <- numeric(p)
+        for (i in 1:p) f[i] <- s[[i]][[2]][ancestral[i]]
+        res <- tabulate(f, n - 1)
+    }
+    attr(res, "sample.size") <- n
+    attr(res, "folded") <- folded
+    class(res) <- "spectrum"
+    res
 }

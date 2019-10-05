@@ -1,8 +1,8 @@
-## summary.loci.R (2018-07-07)
+## summary.loci.R (2019-10-03)
 
 ##   Print and Summaries of Loci Objects
 
-## Copyright 2009-2018 Emmanuel Paradis
+## Copyright 2009-2019 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
@@ -82,7 +82,7 @@ unphase <- function(x)
         x <- geno[x]
         factor(x)
     }
-    for (i in attr(x, "locicol")) x[, i] <- foo(x[, i])
+    for (i in attr(x, "locicol")) x[, i] <- foo(x[, i, drop = TRUE])
     x
 }
 
@@ -111,35 +111,18 @@ print.loci <- function(x, details = FALSE, ...)
 
 summary.loci <- function(object, ...)
 {
-    class(object) <- NULL
-    L <- attr(object, "locicol")
-    ans <- vector("list", length(L))
-    names(ans) <- names(object)[L]
-    ii <- 1L
-    for (i in L) {
-        geno <- levels.default(object[[i]])
-        ng <- length(geno)
-        alle <- strsplit(geno, "[/|]")
-        unialle <- sort(unique(unlist(alle)))
-        l <- tabulate(object[[i]], ng)
-        names(l) <- geno
-        tab <- matrix(0L, length(unialle), ng,
-                      dimnames = list(unialle, geno))
-        for (j in seq_along(alle))
-            for (k in alle[[j]])
-                tab[k, j] <- tab[k, j] + 1L
-        ans[[ii]] <- list(genotype = l, allele = drop(tab %*% l))
-        ii <- ii + 1L
-    }
-    class(ans) <- "summary.loci"
-    ans
+    LOCI <- attr(object, "locicol")
+    res <- .Call("summary_loci_pegas", object, LOCI)
+    names(res) <- names(object)[LOCI]
+    class(res) <- "summary.loci"
+    res
 }
 
 print.summary.loci <- function(x, ...)
 {
     nms <- names(x)
     for (i in 1:length(x)) {
-        cat("Locus", nms[i], ":\n")
+        cat("Locus ", nms[i], ":\n", sep = "")
         cat("-- Genotype frequencies:\n")
         print(x[[i]][[1]])
         cat("-- Allele frequencies:\n")
@@ -148,17 +131,22 @@ print.summary.loci <- function(x, ...)
     }
 }
 
-"[.loci" <- function (x, i, j, drop = TRUE)
+"[.loci" <- function (x, i, j, drop = FALSE)
 {
-    oc <- oldClass(x)
+    ## From base-R [.data.frame
+    Narg  <- nargs()  # number of arg from x,i,j that were specified
+    oc    <- oldClass(x)
     colnms.old <- names(x)
     names(x) <- colnms.new <- as.character(seq_len(ncol(x)))
     loci.nms <- names(x)[attr(x, "locicol")]
-    class(x) <- "data.frame"
-    x <- NextMethod("[")
+    if (Narg > 2) { # More than two arguments indicates that they used matrix-like subset
+       x <- NextMethod("[", drop = drop)
+    } else { # Two or fewer arguments: list-like subsetting
+       x <- NextMethod("[")
+    }
     ## restore the class and the "locicol" attribute only if there
     ## is at least 1 col *and* at least one loci returned:
-    if (class(x) == "data.frame") {
+    if (inherits(x, "data.frame")) {
         locicol <- match(loci.nms, names(x))
         locicol <- locicol[!is.na(locicol)]
         if (length(locicol)) {
@@ -191,4 +179,27 @@ cbind.loci <- function(...)
     class(x) <- c("loci", "data.frame")
     attr(x, "locicol") <- unlist(LOCICOL)
     x
+}
+
+by.loci <- function(data, INDICES = data$population, FUN = NULL, ...,
+                    simplify = TRUE)
+{
+    if (is.null(INDICES))
+        stop("no 'population' column in ", sQuote(deparse(substitute(data))))
+    LOCI <- attr(data, "locicol")
+    p <- length(LOCI)
+    if (is.null(FUN))
+        FUN <- function(x) lapply(summary(x), "[[", 2)
+    INDICES <- factor(INDICES)
+    lv <- levels(INDICES)
+    nlv <- length(lv)
+    gr <- as.integer(INDICES)
+    tmp <- vector("list", nlv)
+    for (i in 1:nlv) tmp[[i]] <- FUN(data[gr == i, ])
+    names(tmp) <- lv
+    res <- vector("list", p)
+    for (i in 1:p)
+        res[[i]] <- do.call(rbind, lapply(tmp, "[[", i))
+    names(res) <- names(data)[LOCI]
+    res
 }
