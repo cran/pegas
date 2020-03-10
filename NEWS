@@ -1,4 +1,27 @@
-		CHANGES IN PEGAS VERSION 0.11-14
+		CHANGES IN PEGAS VERSION 0.13
+
+
+NEW FEATURES
+
+    o haplotype.DNA() now handles ambiguities and gaps in an improved
+      way (see the reference in ?haplotype.DNA). Two options have been
+      added to control the behaviour of these analyses: strict = FALSE
+      and trailingGapsAsN = TRUE.
+
+    o The new functions geoTrans2 transforms latitudes and longitudes
+      from values in decimal degree to character strings (optionally
+      with LaTeX format).
+
+
+BUG FIXES
+
+    o VCFloci() crashed if a path starting with "~" was used.
+
+    o VCF files with large header (> 1 MB) failed to be read.
+
+
+
+		CHANGES IN PEGAS VERSION 0.12
 
 
 NEW FEATURES
@@ -31,7 +54,7 @@ NEW FEATURES
       there is a plot() method.
 
     o There are two new methods as.phylo() and as.evonet() for the
-      class "haploNet".
+          class "haploNet".
 
     o site.spectrum() is now generic with methods for "DNAbin" (old
       code) and for "loci" (new code). The returned object now has an

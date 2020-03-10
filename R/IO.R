@@ -1,8 +1,8 @@
-## IO.R (2018-02-16)
+## IO.R (2019-11-15)
 
 ##   Input/Ouput
 
-## Copyright 2009-2017 Emmanuel Paradis
+## Copyright 2009-2019 Emmanuel Paradis
 
 ## This file is part of the R-package `pegas'.
 ## See the file ../DESCRIPTION for licensing issues.
@@ -11,7 +11,8 @@ read.loci <-
     function(file, header = TRUE, loci.sep = "", allele.sep = "/|",
              col.pop = NULL, col.loci = NULL, ...)
 {
-    res <- read.table(file = file, header = header, sep = loci.sep, ...)
+    res <- read.table(file = file, header = header, sep = loci.sep,
+                      stringsAsFactors = TRUE, ...)
 ### the lines below are in case 'row.names' is used so the col#'s
 ### must be, possibly, decremented by one
     ddd <- list(...)
@@ -36,14 +37,13 @@ read.loci <-
 
 read.vcf <- function(file, from = 1, to = 1e4, which.loci = NULL, quiet = FALSE)
 {
-    file <- path.expand(file) # fix by Frederic Michaud
+    meta <- .getMETAvcf(file)
     f <- .VCFconnection(file)
     GZ <- if (inherits(f, "connection")) TRUE else FALSE
 
     if (is.null(which.loci)) which.loci <- from:to
     nLoci <- length(which.loci)
 
-    meta <- .getMETAvcf(readBin(f, "raw", 1e6))
     labs <- strsplit(meta$LABELS, "\t")[[1]]
     nCol <- length(labs)
     n <- nCol - 9L
