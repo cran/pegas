@@ -1,5 +1,4 @@
 ### R code from vignette source 'ReadingFiles.Rnw'
-### Encoding: UTF-8
 
 ###################################################
 ### code chunk number 1: ReadingFiles.Rnw:31-32
