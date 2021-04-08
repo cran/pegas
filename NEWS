@@ -1,3 +1,77 @@
+		CHANGES IN PEGAS VERSION 1.0
+
+
+NEW FEATURES
+
+    o The new function mutations() draws mutations on a network (with
+      many options; see ?mutations).
+
+    o The new function write.vcf writes an object of class "loci" into
+      a VCF file.
+
+    o There is a new cophenetic() method for objects of class
+      "haploNet", and a new labels() method.
+
+    o diffHaplo() has been simplified and gains the options 'strict'
+      and 'trailingGapsAsN' which are passed to ape::seg.sites().
+
+    o mjn() has a new option 'quiet = FALSE'; its code has been
+      improved and is now 10 times faster (25 times with 100 sequences
+      resulting in running times less than 15 sec). The returned
+      object have the class c("mjn", "haploNet") and there is a new
+      plot.mjn() method.
+
+    o replot() has been improved: the instructions are more detailed,
+      there is a new option 'col.identifier' to show the node to be
+      moved, and the bounding box of the plot is now calculated
+      correctly so the network does not "shrink" after each move.
+
+    o plot.haploNet() has two new options: 'shape' and 'xy' to change
+      the symbol shapes and their coordinates, respectively.
+
+    o There are two new functions, getHaploNetOptions and
+      setHaploNetOptions, to help users change the graphical
+      paramaters when plotting haplotype networks.
+
+    o There is a new as.loci() method for matrices.
+
+    o rmst() implements a new algorithm to stop iterations after no
+      new links are found: this is controlled by the new options
+      'stop.criterion' and 'iter.lim'. There is also a new option
+      'quiet = FALSE'.
+
+    o Fst() now runs in the case of a single population, returning the
+      Fis (and Fit which equates 1).
+
+    o There is a new vignette "PlotHaploNet" detailing some aspects of
+      plotting haplotype networks with pegas, including the new
+      features and options.
+
+
+BUG FIXES
+
+    o A bug was fixed in geoTrans2().
+
+    o as.loci.data.frame() now works with "tibble" objects (thanks to
+      Jean-Baka Domelevo Entfellner for the fix).
+
+    o allelicrichness(, method = "rarefaction") used to return the raw
+      allelic richness: this is fixed and this function gains the
+      option 'min.n' to work with this method (common sample size used
+      for all populations).
+
+    o haplotype() on an empty "DNAbin" object returns an empty
+      "haplotype" object similarly to pegas 0.12 (see issue #53 on GH).
+
+
+OTHER CHANGES
+
+    o adegenet has been moved from 'Depends' to 'Imports'.
+
+    o dist.snp() has been removed.
+
+
+
 		CHANGES IN PEGAS VERSION 0.14
 
 
