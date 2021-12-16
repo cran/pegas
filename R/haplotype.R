@@ -1,4 +1,4 @@
-## haplotype.R (2021-04-14)
+## haplotype.R (2021-09-24)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
@@ -279,16 +279,18 @@ haplotype.DNAbin <- function(x, labels = NULL, strict = FALSE, trailingGapsAsN =
 haplotype.character <- function(x, labels = NULL, ...)
 {
     nms.x <- deparse(substitute(x))
-    if (!is.matrix(x)) stop("x must be a matrix")
-    h <- factor(apply(x, 1, paste, collapse = "\r"))
-    h <- as.integer(h)
-    obj <- x[which(!duplicated(h)), , drop = FALSE]
+    if (!is.matrix(x))
+        stop("x must be a matrix")
+    h <- apply(x, 1, paste, collapse = "\r")
+    hnotdup <- !duplicated(h)
+    obj <- x[which(hnotdup), , drop = FALSE]
+    hnotdup <- h[hnotdup]
     N <- nrow(obj)
     if (is.null(labels))
         labels <- as.character(as.roman(1:N))
     rownames(obj) <- labels
     class(obj) <- c("haplotype", "character")
-    attr(obj, "index") <- lapply(1:N, function(y) which(h == y))
+    attr(obj, "index") <- lapply(1:N, function(i) which(h == hnotdup[i]))
     attr(obj, "from") <- nms.x
     obj
 }
@@ -422,15 +424,16 @@ print.haploNet <- function(x, ...)
     cat("Use print.default() to display all elements.\n")
 }
 
-circle <- function(x, y, size, col = "black", pie = NULL, bg = NULL, ...)
+circle <- function(x, y, size, col = "black", pie = NULL, bg = NULL)
 {
     if (is.null(pie)) {
         symbols(x, y, circles = size / 2, inches = FALSE,
                 add = TRUE, fg = col, bg = bg)
     } else {
-        n <- length(pie)
-        co <- if (length(bg) == 1 && bg == "white") rainbow(n) else rep(bg, length.out = n)
-        floating.pie.asp(x, y, pie, radius = size / 2, col = co)
+        OPTS <- get("plotHaploNetOptions", envir = .PlotHaploNetEnv)
+        op <- par(fg = OPTS$pie.inner.segments.color)
+        floating.pie.asp(x, y, pie, radius = size / 2, col = bg)
+        par(op)
     }
 }
 
@@ -470,20 +473,20 @@ circle <- function(x, y, size, col = "black", pie = NULL, bg = NULL, ...)
     c(res, list(m))
 }
 
-square <- function(x, y, size, col, pie = NULL, bg = NULL, ...)
+square <- function(x, y, size, col, pie = NULL, bg = NULL)
 {
     XY <- .squarePegas(x, y, size, pie = pie)
+    OPTS <- get("plotHaploNetOptions", envir = .PlotHaploNetEnv)
+    border <- OPTS$pie.inner.segments.color
     if (!is.null(pie)) {
-        n <- length(pie)
-        co <- if (length(bg) == 1 && bg == "white") rainbow(n) else rep(bg, length.out = n)
-        for (i in 1:n) {
+        for (i in seq_along(pie)) {
             s <- XY[[2]][, i]
-            rect(s[1], s[2], s[3], s[4], col = co[i])
+            rect(s[1], s[2], s[3], s[4], col = bg[i], border = border)
         }
-        co <- NULL
-    } else co <- bg
+        bg <- NULL # for the call to rect() below
+    }
     s <- XY[[1]]
-    rect(s[1], s[2], s[3], s[4], col = co, border = col, ...)
+    rect(s[1], s[2], s[3], s[4], col = bg, border = border)
 }
 
 .rotateSquares <- function(XY)
@@ -507,21 +510,21 @@ square <- function(x, y, size, col, pie = NULL, bg = NULL, ...)
     res
 }
 
-diamond <- function(x, y, size, col, pie = NULL, bg = NULL, ...)
+diamond <- function(x, y, size, col, pie = NULL, bg = NULL)
 {
     XY <- .squarePegas(x, y, size, pie = pie)
     XY <- .rotateSquares(XY)
+    OPTS <- get("plotHaploNetOptions", envir = .PlotHaploNetEnv)
+    border <- OPTS$pie.inner.segments.color
     if (!is.null(pie)) {
-        n <- length(pie)
-        co <- if (length(bg) == 1 && bg == "white") rainbow(n) else rep(bg, length.out = n)
-        for (i in 1:n) {
+        for (i in seq_along(pie)) {
             xy <- XY[[2]][[i]]
-            polygon(xy$x, xy$y, col = co[i])
+            polygon(xy$x, xy$y, col = bg[i], border = border)
         }
-        co <- NULL
-    } else co <- bg
+        bg <- NULL # for the call to polygon() below
+    }
     xy <- XY[[1]]
-    polygon(xy$x, xy$y, border = col, col = co, ...)
+    polygon(xy$x, xy$y, border = border, col = bg)
 }
 
 .drawSymbolsHaploNet <- function(xx, yy, size, col, bg, shape, pie)
@@ -534,24 +537,18 @@ diamond <- function(x, y, size, col, pie = NULL, bg = NULL, ...)
         n <- length(xx) # nb of nodes
         size <- rep(size, length.out = n)
         col <- rep(col, length.out = n)
-        ## bg <- rep(bg, length.out = n)
+        bg <- if (!is.null(pie) && is.function(bg)) bg(ncol(pie)) else rep(bg, length.out = n)
+        ## 'bg' should always be a vector of colours
         shape <- rep(shape, length.out = n)
-        for (i in 1:n) {
-            if (shape[i] == "circles") {
-                circle(xx[i], yy[i], size[i], col[i], pie[i, ], bg)#[i])
-                next
-            }
-            if (shape[i] == "squares") {
-                square(xx[i], yy[i], size[i], col[i], pie[i, ], bg)#[i])
-                next
-            }
-            ## if (shape[i] == "diamonds")
-            diamond(xx[i], yy[i], size[i], col[i], pie[i, ], bg)#[i])
-        }
+        for (i in 1:n)# {
+            switch(shape[i],
+                   "circles" = circle,
+                   "squares" = square,
+                   "diamonds" = diamond)(xx[i], yy[i], size[i], col[i], pie[i, ], bg)
     }
 }
 
-.drawAlternativeLinks <- function(xx, yy, altlink, threshold, show.mutation)
+.drawAlternativeLinks <- function(xx, yy, altlink, threshold, show.mutation, scale.ratio)
 {
     s <- altlink[, 3] >= threshold[1] & altlink[, 3] <= threshold[2]
     if (!any(s)) return(NULL)
@@ -564,7 +561,7 @@ diamond <- function(x, y, size, col, pie = NULL, bg = NULL, ...)
         n <- length(xx)
         .labelSegmentsHaploNet(xx, yy, altlink[s, 1:2, drop = FALSE],
                                altlink[s, 3, drop = FALSE], rep(1, n),
-                               1, "black", show.mutation)
+                               1, "black", show.mutation, scale.ratio)
     }
 }
 
@@ -689,6 +686,7 @@ replot <- function(xy = NULL, col.identifier = "purple", ...)
     pie <- Last.phn$pie
     labels <- Last.phn$labels
     show.mutation <- Last.phn$show.mutation
+    scale.ratio <- Last.phn$scale.ratio
     altlink <- Last.phn$alter.links
     threshold <- Last.phn$threshold
 
@@ -724,9 +722,9 @@ replot <- function(xy = NULL, col.identifier = "purple", ...)
                  lty = lty, col = col.link)
         if (show.mutation)
             .labelSegmentsHaploNet(xx, yy, cbind(l1, l2), step, size, lwd,
-                                   col.link, as.numeric(show.mutation))
+                                   col.link, as.numeric(show.mutation), scale.ratio)
         if (!is.null(altlink) && !identical(as.numeric(threshold), 0))
-            .drawAlternativeLinks(xx, yy, altlink, threshold, show.mutation)
+            .drawAlternativeLinks(xx, yy, altlink, threshold, show.mutation, scale.ratio)
         .drawSymbolsHaploNet(xx, yy, size, col, bg, shape, pie)
         if (is.character(labels))
             text(xx, yy, labels, font = font, cex = cex)
@@ -767,7 +765,9 @@ plot.haploNet <- function(x, size = 1, col, bg, col.link, lwd, lty,
     ## map options to arguments
     OPTS <- get("plotHaploNetOptions", envir = .PlotHaploNetEnv)
     if (missing(col)) col <- OPTS$haplotype.outer.color
-    if (missing(bg)) bg <- OPTS$haplotype.inner.color
+    if (missing(bg)) {
+        bg <- if (is.null(pie)) OPTS$haplotype.inner.color else OPTS$pie.colors.function
+    }
     if (missing(col.link)) col.link <- OPTS$link.color
     if (missing(lwd)) lwd <- OPTS$link.width
     if (missing(lty)) lty <- OPTS$link.type
@@ -981,7 +981,7 @@ plot.haploNet <- function(x, size = 1, col, bg, col.link, lwd, lty,
     ## draw alternative links
     altlink <- attr(x, "alter.links")
     if (!is.null(altlink) && !identical(as.numeric(threshold), 0))
-        .drawAlternativeLinks(xx, yy, altlink, threshold, show.mutation)
+        .drawAlternativeLinks(xx, yy, altlink, threshold, show.mutation, scale.ratio)
 
     if (show.mutation) {
         if (show.mutation == 1 && all(x[, 3] < 1)) {
@@ -1039,7 +1039,8 @@ plot.haploNet <- function(x, size = 1, col, bg, col.link, lwd, lty,
         }
         if (!is.null(pie)) {
             nc <- ncol(pie)
-            co <- if (length(bg) == 1 && bg == "white") rainbow(nc) else rep(bg, length.out = nc)
+            ##co <- if (length(bg) == 1 && bg == "white") rainbow(nc) else rep(bg, length.out = nc)
+            co <- if (is.function(bg)) bg(nc) else rep(bg, length.out = nc)
             w <- diff(par("usr")[3:4]) / 40
             TOP <- seq(xy[2], by = -w, length.out = nc)
             BOTTOM <- TOP + diff(TOP[1:2]) * 0.9
@@ -1054,7 +1055,8 @@ plot.haploNet <- function(x, size = 1, col, bg, col.link, lwd, lty,
                 col = col, bg = bg, lwd = lwd, lty = lty, shape = shape,
                 col.link = col.link,labels = labels, font = font, cex = cex,
                 asp = asp, pie = pie, show.mutation = show.mutation,
-                alter.links = altlink, threshold = threshold),
+                scale.ratio = scale.ratio, alter.links = altlink,
+                threshold = threshold),
            envir = .PlotHaploNetEnv)
 }
 
@@ -1108,11 +1110,7 @@ subset.haplotype <- function(x, minfreq = 1, maxfreq = Inf, maxna = Inf,
 }
 
 summary.haplotype <- function(object, ...)
-{
-    res <- sapply(attr(object, "index"), length)
-    names(res) <- rownames(object)
-    res
-}
+    setNames(lengths(attr(object, "index")), rownames(object))
 
 print.haplotype <- function(x, ...)
 {
@@ -1131,8 +1129,10 @@ print.haplotype <- function(x, ...)
 
 "[.haplotype" <- function(x, ...)
 {
+    cls <- class(x)
+    if (length(cls) > 1) cls <- cls[-1]
     y <- NextMethod("[")
-    class(y) <- "DNAbin"
+    class(y) <- cls
     y
 }
 
