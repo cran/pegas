@@ -31,6 +31,11 @@ replot(xy = NULL, col.identifier = "purple", ...)
   other graphics (which not possible with \code{replot} because the
   network is replotted).
 }
+\note{
+  For users of RStudio: the function does not work within this
+  application. It seems the best is to run R from a shell (or maybe
+  opening a new graphical device with \code{\link[grDevices]{X11}}).
+}
 \value{
   a named list with two numeric vertors (\code{x} and \code{y}).
 }
@@ -39,6 +44,18 @@ replot(xy = NULL, col.identifier = "purple", ...)
   \code{\link{haploNet}}, \code{\link{haploFreq}}
 }
 \examples{
+## a non-interactive example:
+example(mjn)
+layout(matrix(1:2, 1))
+plot(ntz, labels = TRUE)
+## it is possible plot this network with no line-crossing
+## with these coordinates:
+xy <- list(x = c(3.2, -2.6, -6.6, -7.2, 0, 3.5, 2.6, -2.9, -0.3, 3.4, -3.4),
+           y = c(3.4, 4.4, 1.3, -3.9, -5.5, -10.9, 0.1, -0.8, -2.3,  -7.9, -8.1))
+replot(ntz, xy = xy) # or plot(ntz, xy = xy, labels = TRUE)
+layout(1)
+
+## an interactive example:
 \dontrun{
 data(woodmouse)
 net <- haploNet(haplotype(woodmouse))

@@ -1,3 +1,43 @@
+		CHANGES IN PEGAS VERSION 1.2
+
+
+NEW FEATURES
+
+    o The new function nullAlleles2NA changes genotypes with at least
+      one `null allele' into NA.
+
+    o MMD() now returns invisibly a list with the plotted data (i.e.,
+      histogram, empirical density, and expected curve under stable
+      population).
+
+    o dist.asd() has now the option 'pairwise.deletion = FALSE'.
+
+
+BUG FIXES
+
+    o The estimator variance in theta.s() has been corrected (thanks
+      to Carsten Wiuf) and the help page has been updated.
+
+    o plot.haploNet() did not handle correctly the 'bg' argument when
+      it is a vector of colours. This also affected the plot of MJN
+      networks.
+
+    o VCF files with DOS-style end of lines (i.e., CRLF) are now
+      supported.
+
+    o Argument 'bg' was not always well interpreted in plot.haploNet()
+      and plot.mjn().
+
+
+OTHER CHANGES
+
+    o There is a new (non-interactive) example in ?replot.
+
+    o The help page of plot.mjn() has been clarified about the usage
+      of the arguments 'shape' and 'bg'.
+
+
+
 		CHANGES IN PEGAS VERSION 1.1
 
 
