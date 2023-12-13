@@ -1,4 +1,4 @@
-## haplotype.R (2023-02-23)
+## haplotype.R (2023-11-21)
 
 ##   Haplotype Extraction, Frequencies, and Networks
 
@@ -113,23 +113,49 @@ rmst <- function(d, B = NULL, stop.criterion = NULL, iter.lim = 1000,
     }
     links <- names(TAB) <- MAT
 
-    ## define the alternative links wrt the last MST:
-    labs <- attr(rnt, "labels")
-    MST.str <- labs[rnt[, 1:2]]
-    dim(MST.str) <- c(n - 1, 2)
-    MST.str <- apply(MST.str, 1, sort)
-    MST.str <- paste(MST.str[1, ], MST.str[2, ], sep = "\r")
-    k <- match(links, MST.str)
-    nak <- is.na(k)
-    TAB <- c(TAB[match(MST.str, links)], TAB[nak])
-    alt <- unlist(strsplit(links[nak], "\r"))
+    ## define the backbone-network:
+    labs <- rownames(D)
+    forest <- 1:n
+    k <- 0L
+    done <- FALSE
+    alt.logi <- !logical(length(TAB))
+    ## the backbone-network is built by checking the links in the order
+    ## of pairs of observations, and including the links which were
+    ## found during the iterations of RMST.
+    for (i in 1:(n - 1)) {
+        labi <- labs[i]
+        for (j in (i + 1):n) {
+            tmp <- paste(sort(c(labi, labs[j])), collapse = "\r")
+            m <- match(tmp, links)
+            if (is.na(m)) next
+            if (forest[i] == forest[j]) next
+            alt.logi[m] <- FALSE # so this is not an alternative link
+            k <- k + 1L
+            rnt[k, 1L] <- i
+            rnt[k, 2L] <- j
+            if (k == n - 1) {
+                done <- TRUE
+                break
+            }
+            forest[forest == forest[j]] <- forest[i]
+        }
+        if (done) break
+    }
+    rnt[, 3L] <- D[rnt[, 1:2]]
+
+    ## An alternative is to use the last MST and recode the haplotypes
+    ## in the same order than in the input distance matrix:
+    ##labs <- rownames(D)
+    ##recode <- match(attr(rnt, "labels"), labs)
+    ##rnt[, 1L] <- recode[rnt[, 1L]]
+    ##rnt[, 2L] <- recode[rnt[, 2L]]
+
+    attr(rnt, "labels") <- labs
+    alt <- unlist(strsplit(links[alt.logi], "\r"))
     alt <- match(alt, labs)
     alt <- matrix(alt, length(alt)/2, 2, byrow = TRUE)
     alt <- t(apply(alt, 1, sort))
-    i <- alt[, 1]
-    j <- alt[, 2]
-    k <- n*(i - 1) - i*(i - 1)/2 + j - i
-    alt <- cbind(alt, d[k])
+    alt <- cbind(alt, D[alt])
     colnames(alt) <- c("", "", "step")
     attr(rnt, "alter.links") <- alt
     names(TAB) <- gsub("\r", "--", names(TAB))
@@ -194,41 +220,10 @@ msn <- function(d)
 
 mst <- function(d)
 {
-    getIandJ <- function(ij, n) {
-        ## assumes a lower triangle, so i > j
-        ## n must be > 1 (not checked)
-        ## ij must be <= (n - 1)*n/2 (not checked too)
-        j <- 1L
-        N <- n - 1L
-        while (ij > N) {
-            j <- j + 1L
-            N <- N + n - j
-        }
-        i <- n - (N - ij)
-        c(j, i) # return the smaller index first
-    }
     if (is.matrix(d)) d <- as.dist(d)
     n <- attr(d, "Size")
     if (n < 2) stop("less than 2 observations in distance matrix")
-    Nedge <- n - 1L
-    m <- matrix(NA_real_, Nedge, 3)
-    forest <- 1:n
-    o <- order(d)
-    p <- getIandJ(o[1L], n)
-    m[1, ] <- c(p, d[o[1L]])
-    forest[p[2L]] <- forest[p[1L]]
-    i <- j <- 2L
-    while (j <= Nedge) {
-        p <- getIandJ(o[i], n)
-        f1 <- forest[p[1L]]
-        f2 <- forest[p[2L]]
-        if (f2 != f1) {
-            m[j, ] <- c(p, d[o[i]])
-            forest[forest == f2] <- f1
-            j <- j + 1L
-        }
-        i <- i + 1L
-    }
+    m <- .Call(mst_C, d, n)
     colnames(m) <- c("", "", "step")
     attr(m, "labels") <- attr(d, "Labels")
     class(m) <- "haploNet"
@@ -420,7 +415,7 @@ print.haploNet <- function(x, ...)
     altlinks <- attr(x, "alter.links")
     if (!is.null(altlinks)) N <- N + nrow(altlinks)
     cat(" ", N, if (N > 1) "links\n" else "link\n")
-    cat("  link lengths between", x[1, 3], "and", x[n, 3], "steps\n\n")
+    cat("  link lengths between", x[1, 3], "and", x[n, 3], "step(s)\n\n")
     cat("Use print.default() to display all elements.\n")
 }
 
@@ -549,7 +544,7 @@ diamond <- function(x, y, size, col, pie = NULL, bg = NULL)
     }
 }
 
-.drawAlternativeLinks <- function(xx, yy, altlink, threshold, show.mutation, scale.ratio)
+.drawAlternativeLinks <- function(xx, yy, altlink, threshold, show.mutation, scale.ratio, size)
 {
     s <- altlink[, 3] >= threshold[1] & altlink[, 3] <= threshold[2]
     if (!any(s)) return(NULL)
@@ -561,7 +556,7 @@ diamond <- function(x, y, size, col, pie = NULL, bg = NULL)
     if (show.mutation) {
         n <- length(xx)
         .labelSegmentsHaploNet(xx, yy, altlink[s, 1:2, drop = FALSE],
-                               altlink[s, 3, drop = FALSE], rep(1, n),
+                               altlink[s, 3, drop = FALSE], size,
                                1, "black", show.mutation, scale.ratio)
     }
 }
@@ -613,6 +608,43 @@ diamond <- function(x, y, size, col, pie = NULL, bg = NULL)
     }
 }
 
+.mutationDots <- function(x0, y0, x1, y1, n, deltaRadii, lwd, col.link,
+                          space = 0.1, diameter = 0.05)
+{
+    ## convert inches into user-coordinates:
+    l <- xinch(diameter)
+    sp <- xinch(space)
+    for (i in seq_along(x0)) {
+        x <- seq(-(sp*(n[i] - 1))/2, by = sp, length.out = n[i])
+        y <- numeric(n[i])
+        ## rotation if the line is not horizontal
+        if (y0[i] != y1[i]) {
+            theta <- atan2(y1[i] - y0[i], x1[i] - x0[i])
+            tmp <- rect2polar(x, y)
+            xy <- polar2rect(tmp$r, tmp$angle + theta)
+            x <- xy$x
+            y <- xy$y
+        }
+        ## translation:
+        if (deltaRadii[i] == 0) {
+            xm <- (x0[i] + x1[i]) / 2
+            ym <- (y0[i] + y1[i]) / 2
+           } else {
+               ## see explanations below
+               li <- sqrt((x0[i] - x1[i])^2 + (y0[i] - y1[i])^2)
+               w0 <- 1 / (li - deltaRadii[i] / 2)
+               w1 <- 1 / (li + deltaRadii[i] / 2)
+               sumw <- w0 + w1
+               xm <- (x0[i] * w0 + x1[i] * w1) / sumw
+               ym <- (y0[i] * w0 + y1[i] * w1) / sumw
+        }
+        x <- x + xm
+        y <- y + ym
+        symbols(x, y, circles = rep(lwd/15, length(x)), inches = FALSE,
+                add = TRUE, fg = col.link, bg = col.link)
+    }
+}
+
 .labelSegmentsHaploNet <- function(xx, yy, link, step, size, lwd, col.link, method, scale.ratio)
 {
 ### method: the way the segments are labelled
@@ -625,15 +657,17 @@ diamond <- function(x, y, size, col, pie = NULL, bg = NULL)
     switch(method, {
         .mutationRug(xx[l1], yy[l1], xx[l2], yy[l2], step, size[l2] - size[l1])
     }, {
-        ld1 <- step
-        ld2 <- step * scale.ratio
-        for (i in seq_along(ld1)) {
-            pc <- ((1:ld1[i]) / (ld1[i] + 1) * ld2[i] + size[l1[i]]/2) / (ld2[i] + (size[l1[i]] + size[l2[i]])/2)
-            xr <- pc * (xx[l2[i]] - xx[l1[i]]) +  xx[l1[i]]
-            yr <- pc * (yy[l2[i]] - yy[l1[i]]) +  yy[l1[i]]
-            symbols(xr, yr, circles = rep(lwd/15, length(xr)), inches = FALSE,
-                    add = TRUE, fg = col.link, bg = col.link)
-        }
+        .mutationDots(xx[l1], yy[l1], xx[l2], yy[l2], step, size[l2] - size[l1],
+                      lwd, col.link, space = 0.1, diameter = 0.05)
+###        ld1 <- step
+###        ld2 <- step * scale.ratio
+###        for (i in seq_along(ld1)) {
+###            pc <- ((1:ld1[i]) / (ld1[i] + 1) * ld2[i] + size[l1[i]]/2) / (ld2[i] + (size[l1[i]] + size[l2[i]])/2)
+###            xr <- pc * (xx[l2[i]] - xx[l1[i]]) +  xx[l1[i]]
+###            yr <- pc * (yy[l2[i]] - yy[l1[i]]) +  yy[l1[i]]
+###            symbols(xr, yr, circles = rep(lwd/15, length(xr)), inches = FALSE,
+###                    add = TRUE, fg = col.link, bg = col.link)
+###        }
     }, {
         x0 <- xx[l1]
         x1 <- xx[l2]
@@ -725,7 +759,7 @@ replot <- function(xy = NULL, col.identifier = "purple", ...)
             .labelSegmentsHaploNet(xx, yy, cbind(l1, l2), step, size, lwd,
                                    col.link, as.numeric(show.mutation), scale.ratio)
         if (!is.null(altlink) && !identical(as.numeric(threshold), 0))
-            .drawAlternativeLinks(xx, yy, altlink, threshold, show.mutation, scale.ratio)
+            .drawAlternativeLinks(xx, yy, altlink, threshold, show.mutation, scale.ratio, size)
         .drawSymbolsHaploNet(xx, yy, size, col, bg, shape, pie)
         if (is.character(labels))
             text(xx, yy, labels, font = font, cex = cex)
@@ -759,7 +793,7 @@ replot <- function(xy = NULL, col.identifier = "purple", ...)
 }
 
 plot.haploNet <- function(x, size = 1, col, bg, col.link, lwd, lty,
-             shape = "circles", pie = NULL, labels, font, cex,
+             shape = "circles", pie = NULL, labels, font, cex, col.lab,
              scale.ratio, asp = 1, legend = FALSE, fast = FALSE,
              show.mutation, threshold = c(1, 2), xy = NULL, ...)
 {
@@ -775,6 +809,7 @@ plot.haploNet <- function(x, size = 1, col, bg, col.link, lwd, lty,
     if (missing(labels)) labels <- OPTS$labels
     if (missing(font)) font <- OPTS$labels.font
     if (missing(cex)) cex <- OPTS$labels.cex
+    if (missing(col.lab)) col.lab <- OPTS$labels.color
     if (missing(scale.ratio)) scale.ratio <- OPTS$scale.ratio
     if (missing(show.mutation)) show.mutation <- OPTS$show.mutation
 
@@ -982,7 +1017,7 @@ plot.haploNet <- function(x, size = 1, col, bg, col.link, lwd, lty,
     ## draw alternative links
     altlink <- attr(x, "alter.links")
     if (!is.null(altlink) && !identical(as.numeric(threshold), 0))
-        .drawAlternativeLinks(xx, yy, altlink, threshold, show.mutation, scale.ratio)
+        .drawAlternativeLinks(xx, yy, altlink, threshold, show.mutation, scale.ratio, size)
 
     if (show.mutation) {
         if (show.mutation == 1 && all(x[, 3] < 1)) {
@@ -997,7 +1032,7 @@ plot.haploNet <- function(x, size = 1, col, bg, col.link, lwd, lty,
 
     if (labels) {
         labels <- attr(x, "labels") # for export below
-        text(xx, yy, labels, font = font, cex = cex)
+        text(xx, yy, labels, font = font, cex = cex, col = col.lab)
     }
     if (legend[1]) {
         if (is.logical(legend)) {
